@@ -9,7 +9,7 @@
 
 class qcircuit {
 public:
-    qcircuit(int roots);
+    qcircuit(int rootnum);
     bool Reuse(int from, int to);
     void H(int qbit);
     void CNOT(int qbit1, int qbit2);
@@ -17,11 +17,11 @@ public:
     void Reset(int qbit);
     void Measure(int qbit);
     bool hasCycle();
-    Gate* EndOfExecution(int qbit);
+    Gate EndOfExecution(int qbit);
     void OneQubitGate(int qbit, GateType type);
     void TwoQubitGate(int qbit1, int qbit2, GateType type);
     int Qbits();
 private:
-    std::vector<Gate*> roots;
+    std::vector<Gate> roots;
     int qbits;
 };
