@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <set>
+#include <optional>
 
 // ================================================
 // GATE TYPES
@@ -14,6 +16,8 @@ enum GateType {
   MeasureGate = 2,
   HadamardGate = 3,
   CNOTGate = 4,
+  CZGate = 5,
+
 };
 
 // ================================================
@@ -30,4 +34,6 @@ struct Gate {
   GateType type;
   std::vector<Edge> edges;
   Edge* findEdge(int qbit);
+  std::set<int> UpstreamQbits();
+  std::vector<int> Qbits();
 };

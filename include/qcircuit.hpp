@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 #include "../include-shared/gate.hpp"
 
 class qcircuit {
@@ -17,8 +18,10 @@ public:
     void Measure(int qbit);
     bool hasCycle();
     Gate* EndOfExecution(int qbit);
-    void OneQubitGate(int qubit, GateType type);
-
+    void OneQubitGate(int qbit, GateType type);
+    void TwoQubitGate(int qbit1, int qbit2, GateType type);
+    int Qbits();
 private:
     std::vector<Gate*> roots;
+    int qbits;
 };

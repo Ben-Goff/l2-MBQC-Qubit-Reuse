@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libcircuit.a CMakeFiles/circuit.dir/src/qcircuit.cxx.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libcircuit.a
