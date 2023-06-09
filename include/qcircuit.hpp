@@ -17,11 +17,13 @@ public:
     void Reset(int qbit);
     void Measure(int qbit);
     bool hasCycle();
-    Gate EndOfExecution(int qbit);
+    Gate* EndOfExecution(int qbit);
     void OneQubitGate(int qbit, GateType type);
     void TwoQubitGate(int qbit1, int qbit2, GateType type);
     int Qbits();
+    std::vector<Gate*>* getroots();
+    void setroots(std::vector<Gate*>* r);
 private:
-    std::vector<Gate> roots;
+    std::vector<Gate*> roots;
     int qbits;
 };

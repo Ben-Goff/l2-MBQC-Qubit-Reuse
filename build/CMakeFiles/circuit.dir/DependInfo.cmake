@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/ben/github/l2-MBQC-Qubit-Reuse/src/qcircuit.cxx" "CMakeFiles/circuit.dir/src/qcircuit.cxx.o" "gcc" "CMakeFiles/circuit.dir/src/qcircuit.cxx.o.d"
+  "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src/qcircuit.cxx" "CMakeFiles/circuit.dir/src/qcircuit.cxx.o" "gcc" "CMakeFiles/circuit.dir/src/qcircuit.cxx.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

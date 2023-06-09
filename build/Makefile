@@ -57,10 +57,10 @@ RM = /opt/homebrew/Cellar/cmake/3.26.4/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse
+CMAKE_SOURCE_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse/build
+CMAKE_BINARY_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles /Users/ben/github/l2-MBQC-Qubit-Reuse/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named qubit_reuse
+
+# Build rule for target.
+qubit_reuse: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 qubit_reuse
+.PHONY : qubit_reuse
+
+# fast build rule for target.
+qubit_reuse/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/qubit_reuse.dir/build.make CMakeFiles/qubit_reuse.dir/build
+.PHONY : qubit_reuse/fast
+
+#=============================================================================
 # Target rules for targets named circuit
 
 # Build rule for target.
@@ -141,19 +154,6 @@ gate: cmake_check_build_system
 gate/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gate.dir/build.make CMakeFiles/gate.dir/build
 .PHONY : gate/fast
-
-#=============================================================================
-# Target rules for targets named qubit_reuse
-
-# Build rule for target.
-qubit_reuse: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 qubit_reuse
-.PHONY : qubit_reuse
-
-# fast build rule for target.
-qubit_reuse/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/qubit_reuse.dir/build.make CMakeFiles/qubit_reuse.dir/build
-.PHONY : qubit_reuse/fast
 
 src-shared/gate.o: src-shared/gate.cxx.o
 .PHONY : src-shared/gate.o

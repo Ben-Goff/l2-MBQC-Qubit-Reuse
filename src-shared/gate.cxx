@@ -1,11 +1,9 @@
 #include "../include-shared/gate.hpp"
 
-std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> Gate::findEdge(int qbit) {
-    printf("hello2 looking for %d. there are %lu edges\n", qbit, this->edges.size());
-    for(auto e : this->edges) {
-        printf("i found %d\n", std::get<1>(e));
+std::tuple<std::optional<Gate*>, int, std::optional<Gate*>>* Gate::findEdge(int qbit) {
+    for(std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> &e : this->edges) {
         if(std::get<1>(e) == qbit) {
-            return e;
+            return &e;
         }
     }
     throw "can't be found";

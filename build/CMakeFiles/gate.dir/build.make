@@ -53,10 +53,10 @@ RM = /opt/homebrew/Cellar/cmake/3.26.4/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse
+CMAKE_SOURCE_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse/build
+CMAKE_BINARY_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/gate.dir/depend.make
@@ -70,18 +70,18 @@ include CMakeFiles/gate.dir/progress.make
 include CMakeFiles/gate.dir/flags.make
 
 CMakeFiles/gate.dir/src-shared/gate.cxx.o: CMakeFiles/gate.dir/flags.make
-CMakeFiles/gate.dir/src-shared/gate.cxx.o: /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx
+CMakeFiles/gate.dir/src-shared/gate.cxx.o: /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx
 CMakeFiles/gate.dir/src-shared/gate.cxx.o: CMakeFiles/gate.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gate.dir/src-shared/gate.cxx.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gate.dir/src-shared/gate.cxx.o -MF CMakeFiles/gate.dir/src-shared/gate.cxx.o.d -o CMakeFiles/gate.dir/src-shared/gate.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gate.dir/src-shared/gate.cxx.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gate.dir/src-shared/gate.cxx.o -MF CMakeFiles/gate.dir/src-shared/gate.cxx.o.d -o CMakeFiles/gate.dir/src-shared/gate.cxx.o -c /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx
 
 CMakeFiles/gate.dir/src-shared/gate.cxx.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gate.dir/src-shared/gate.cxx.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx > CMakeFiles/gate.dir/src-shared/gate.cxx.i
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx > CMakeFiles/gate.dir/src-shared/gate.cxx.i
 
 CMakeFiles/gate.dir/src-shared/gate.cxx.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gate.dir/src-shared/gate.cxx.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx -o CMakeFiles/gate.dir/src-shared/gate.cxx.s
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx -o CMakeFiles/gate.dir/src-shared/gate.cxx.s
 
 # Object files for target gate
 gate_OBJECTS = \
@@ -93,7 +93,7 @@ gate_EXTERNAL_OBJECTS =
 libgate.a: CMakeFiles/gate.dir/src-shared/gate.cxx.o
 libgate.a: CMakeFiles/gate.dir/build.make
 libgate.a: CMakeFiles/gate.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libgate.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libgate.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/gate.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gate.dir/link.txt --verbose=$(VERBOSE)
 
@@ -106,6 +106,6 @@ CMakeFiles/gate.dir/clean:
 .PHONY : CMakeFiles/gate.dir/clean
 
 CMakeFiles/gate.dir/depend:
-	cd /Users/ben/github/l2-MBQC-Qubit-Reuse/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ben/github/l2-MBQC-Qubit-Reuse /Users/ben/github/l2-MBQC-Qubit-Reuse /Users/ben/github/l2-MBQC-Qubit-Reuse/build /Users/ben/github/l2-MBQC-Qubit-Reuse/build /Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles/gate.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ben/GitHub/l2-MBQC-Qubit-Reuse /Users/ben/GitHub/l2-MBQC-Qubit-Reuse /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles/gate.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/gate.dir/depend
 

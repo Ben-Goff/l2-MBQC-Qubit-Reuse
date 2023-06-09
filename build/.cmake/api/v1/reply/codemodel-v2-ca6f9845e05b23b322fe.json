@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ogdf-user-example",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "circuit::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-circuit-Debug-bb22cb79f9733b462c66.json",
+					"name" : "circuit",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "gate::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-gate-Debug-1ae920bce006cd96cc5f.json",
+					"name" : "gate",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "qubit_reuse::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-qubit_reuse-Debug-9e3af628feb11723444f.json",
+					"name" : "qubit_reuse",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build",
+		"source" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 5
+	}
+}
