@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/clang++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src -I/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include/coin
+CXX_INCLUDES = -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include/coin
 
 CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk
 

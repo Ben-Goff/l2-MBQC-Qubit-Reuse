@@ -26,8 +26,9 @@ enum GateType {
 
 struct Gate {
   GateType type;
-  std::vector<std::tuple<std::optional<Gate*>, int, std::optional<Gate*>>> edges;
-  std::tuple<std::optional<Gate*>, int, std::optional<Gate*>>* findEdge(int qbit);
+  std::vector<std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>> edges;
+  std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* findEdge(int qbit);
   std::set<int> UpstreamQbits();
   std::vector<int> Qbits();
+  bool isEnd(int qbit);
 };

@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(ogdf-user-example CXX)
 
-set(OGDF_CONFIG_SEARCH_PATH CACHE PATH ${PROJECT_SOURCE_DIR}/ogdf-master/)
+set(OGDF_CONFIG_SEARCH_PATH PATH ${PROJECT_SOURCE_DIR}/ogdf-master/)
 
 find_package(OGDF CONFIG PATHS ${OGDF_CONFIG_SEARCH_PATH})
 if(NOT OGDF_FOUND)
@@ -21,8 +21,15 @@ target_link_libraries(qubit_reuse OGDF)
 
 add_library(circuit ${PROJECT_SOURCE_DIR}/src/qcircuit.cxx)
 add_library(gate ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
+add_library(constants ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
 target_include_directories(circuit PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_include_directories(gate PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+target_include_directories(constants PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+
+add_library(graph ${PROJECT_SOURCE_DIR}/src-shared/graph.cxx)
+target_include_directories(gate PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+target_include_directories(graph PRIVATE ${OGDF_INCLUDE_DIRS})
+target_link_libraries(graph OGDF)
 
 
 # add_library(include ${PROJECT_SOURCE_DIR}/ogdf-master/include/)
@@ -33,5 +40,8 @@ target_include_directories(gate PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
 # add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/src/main.cxx)
 target_link_libraries(qubit_reuse circuit)
 target_link_libraries(qubit_reuse gate)
+target_link_libraries(qubit_reuse graph)
+target_link_libraries(constants graph)
+
 # target_link_libraries(${PROJECT_NAME} include)
 # target_link_libraries(${PROJECT_NAME} src)

@@ -88,6 +88,11 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "shared_mutex": "cpp",
-        "__verbose_abort": "cpp"
+        "__verbose_abort": "cpp",
+        "any": "cpp",
+        "forward_list": "cpp",
+        "queue": "cpp",
+        "regex": "cpp",
+        "unordered_set": "cpp"
     }
   }

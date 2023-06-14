@@ -1,5 +1,6 @@
 #include "qcircuit.cxx"
 #include "../src-shared/gate.cxx"
+#include "../src-shared/graph.cxx"
 #include <iostream>
 
 #include <ogdf/basic/Graph.h>
@@ -33,38 +34,53 @@ int main(int argc, char* argv[]) {
     printf("now adding measure gate\n");
     simplecircuit.Measure(2);
     printf("now doing reuse\n");
-    bool works = simplecircuit.Reuse(0, 2);
-    printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
+    //bool works = simplecircuit.Reuse(0, 2);
+    //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
+
+    static qcircuit basic(3);
+    basic.CNOT(0, 2);
+    basic.H(1);
+
+
+    OutputCircuit(basic, "output-manual");
 
 
 
 
-    Graph G;
-    GraphAttributes GA(G,
-      GraphAttributes::nodeGraphics | GraphAttributes::edgeGraphics);
+    // Graph G;
+    // GraphAttributes GA(G, GraphAttributes::all);
+    //     node left = G.newNode();
+    //     GA.x(left) = 0;
+    //     GA.y(left) = 0;
+    //     GA.width(left) = 10;
+    //     GA.height(left) = 10;
+    //     //GA.strokeColor(left) = ogdf::Color::Name::Orange;
+    //     //GA.label(left) = "+";
+    //     //GA.zLabel(left) = 50;
+    //     GA.fillPattern(left) = ogdf::FillPattern::DiagonalCross;
+    //     GA.fillBgColor(left) = ogdf::Color::Name::Green;
+        
+
+    //     // node bottom = G.newNode();
+    //     // GA.x(bottom) = 500;
+    //     // GA.y(bottom) = -200;
+    //     // GA.width(bottom) = 10;
+    //     // GA.height(bottom) = 10;
+    //     // GA.fillColor(bottom) = ogdf::Color::Name::Purple;
+    //     // GA.fillPattern(bottom) = ogdf::FillPattern::BackwardDiagonal;
+    //     // GA.shape(bottom) = ogdf::Shape::Rect;
+    //     // GA.fillBgColor(left) = ogdf::Color::Name::Green;
+    //     // //GA.label(bottom) = "H";
+    //     // //GA.yLabel(bottom) = 1;
  
-    const int LEN = 11;
-    for(int i = 1; i < LEN; ++i) {
-        node left = G.newNode();
-        GA.x(left) = -5*(i+1);
-        GA.y(left) = -20*i;
-        GA.width(left) = 10*(i+1);
-        GA.height(left) = 15;
- 
-        node bottom = G.newNode();
-        GA.x(bottom) = 20*(LEN-i);
-        GA.y(bottom) = 5*(LEN+1-i);
-        GA.width(bottom) = 15;
-        GA.height(bottom) = 10*(LEN+1-i);
- 
-        edge e = G.newEdge(left,bottom);
-        DPolyline &p = GA.bends(e);
-        p.pushBack(DPoint(10,-20*i));
-        p.pushBack(DPoint(20*(LEN-i),-10));
-    }
- 
-    GraphIO::write(GA, "output-manual.gml", GraphIO::writeGML);
-    GraphIO::write(GA, "output-manual.svg", GraphIO::drawSVG);
+    //     // edge e = G.newEdge(left,bottom);
+    //     // // DPolyline &p = GA.bends(e);
+    //     // // p.pushBack(DPoint(10,-20*i));
+    //     // // p.pushBack(DPoint(20*(LEN-i),-10));
+
+    // GraphIO::write(GA, "output-manual.gml", GraphIO::writeGML);
+    // GraphIO::write(GA, "output-manual.svg", GraphIO::drawSVG);
+
 
 
 

@@ -1,0 +1,6 @@
+digraph G {
+	graph [dim="3"]
+
+	0 [id="0", label="", comment="", width="10.000000", height="10.000000", shape="rect", pos="0.000000,0.000000,0.000000", labelpos="0.000000,0.000000,0.000000", color="#000000", fillcolor="#FFFFFF", stroketype="Solid", strokewidth="1.000000", fillpattern="DiagonalCross", fillbgcolor="#008000", type="0", weight="0"]
+
+}

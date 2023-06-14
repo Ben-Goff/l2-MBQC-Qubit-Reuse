@@ -32,7 +32,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 25,
+				"line" : 26,
 				"parent" : 0
 			}
 		]
@@ -50,7 +50,7 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/src-shared"
+					"path" : "/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared"
 				}
 			],
 			"language" : "CXX",

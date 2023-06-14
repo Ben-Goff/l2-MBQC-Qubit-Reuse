@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build"
+			"value" : "/Users/ben/github/l2-MBQC-Qubit-Reuse/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -378,10 +378,6 @@
 			"properties" : 
 			[
 				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
 					"name" : "HELPSTRING",
 					"value" : "No help, variable specified on the command line."
 				}
@@ -411,7 +407,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles/pkgRedirects"
+			"value" : "/Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -1038,18 +1034,6 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "OGDF_CONFIG_SEARCH_PATH",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/"
-				}
-			],
-			"type" : "PATH",
-			"value" : ""
-		},
-		{
 			"name" : "OGDF_DIR",
 			"properties" : 
 			[
@@ -1062,6 +1046,30 @@
 			"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master"
 		},
 		{
+			"name" : "constants_LIB_DEPENDS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Dependencies for the target"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "general;graph;"
+		},
+		{
+			"name" : "graph_LIB_DEPENDS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Dependencies for the target"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "general;OGDF;"
+		},
+		{
 			"name" : "ogdf-user-example_BINARY_DIR",
 			"properties" : 
 			[
@@ -1071,7 +1079,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build"
+			"value" : "/Users/ben/github/l2-MBQC-Qubit-Reuse/build"
 		},
 		{
 			"name" : "ogdf-user-example_IS_TOP_LEVEL",
@@ -1095,7 +1103,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/ben/GitHub/l2-MBQC-Qubit-Reuse"
+			"value" : "/Users/ben/github/l2-MBQC-Qubit-Reuse"
 		}
 	],
 	"kind" : "cache",

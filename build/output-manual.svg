@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events" version="1.1" baseProfile="full" viewBox="-6.5 -6.5 43 53">
+	<g>
+		<g>
+			<path fill="none" d=" M0,0 L30,0" stroke="#000000" stroke-width="1.000000px" />
+		</g>
+		<g>
+			<path fill="none" d=" M0,40 L30,40" stroke="#000000" stroke-width="1.000000px" />
+		</g>
+		<g>
+			<path fill="none" d=" M30,0 L30,40" stroke="#000000" stroke-width="1.000000px" />
+		</g>
+		<g>
+			<path fill="none" d=" M0,20 L30,20" stroke="#000000" stroke-width="1.000000px" />
+		</g>
+	</g>
+	<g>
+		<rect x="-5" y="-5" width="10" height="10" fill="#FFFFFF" stroke-width="1.000000px" stroke="none" />
+		<text x="0" y="0" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000">|0〉</text>
+	</g>
+	<g>
+		<rect x="-5" y="15" width="10" height="10" fill="#FFFFFF" stroke-width="1.000000px" stroke="none" />
+		<text x="0" y="20" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000">|0〉</text>
+	</g>
+	<g>
+		<rect x="-5" y="35" width="10" height="10" fill="#FFFFFF" stroke-width="1.000000px" stroke="none" />
+		<text x="0" y="40" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000">|0〉</text>
+	</g>
+	<g>
+		<ellipse cx="30" cy="0" rx="2.5" ry="2.5" fill="#000000" stroke-width="1.000000px" stroke="#000000" />
+		<text x="30" y="0" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000"></text>
+	</g>
+	<g>
+		<ellipse cx="30" cy="40" rx="5" ry="5" fill="#FFFFFF" stroke-width="1.000000px" stroke="#000000" />
+		<text x="30" y="41" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000">+</text>
+	</g>
+	<g>
+		<rect x="25" y="15" width="10" height="10" fill="#FFFFFF" stroke-width="1.000000px" stroke="#000000" />
+		<text x="30" y="21" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="10" fill="#000000">H</text>
+	</g>
+</svg>

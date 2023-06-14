@@ -8,7 +8,9 @@ qcircuit::qcircuit(int rootnum) {
     for(int i = 0; i < rootnum; i++) {
         Gate* curr = new Gate;
         curr->type = ResetGate;
-        std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> e = std::make_tuple(std::nullopt, i, std::nullopt);
+        int* gate_int = new int;
+        *gate_int = i;
+        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = std::make_tuple(std::nullopt, gate_int, std::nullopt);
         curr->edges = {e};
         r->push_back(curr);
     }
@@ -55,8 +57,11 @@ void qcircuit::OneQubitGate(int qbit, GateType type) {
     Gate* g = new Gate;
     //set gate type
     g->type = type;
+    //make pointer for qbit int
+    int* gate_int = new int;
+    *gate_int = qbit;
     //make edge for gate
-    std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> added = std::make_tuple(std::optional<Gate*>{end}, qbit, std::nullopt);
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> added = std::make_tuple(std::optional<Gate*>{end}, gate_int, std::nullopt);
     //add edge to gate
     g->edges = {added};
     //make the new gate what the previously last gate now points to
@@ -71,10 +76,15 @@ void qcircuit::TwoQubitGate(int qbit1, int qbit2, GateType type) {
     Gate* g = new Gate;
     //set gate type
     g->type = type;
+    //make pointers for qbit ints
+    int* gate_int1 = new int;
+    *gate_int1 = qbit1;
+    int* gate_int2 = new int;
+    *gate_int2 = qbit2;
     //make edge for gate for qbit1
-    std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> added1 = std::make_tuple(std::optional<Gate*>{end1}, qbit1, std::nullopt);
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> added1 = std::make_tuple(std::optional<Gate*>{end1}, gate_int1, std::nullopt);
     //make edge for gate for qbit2
-    std::tuple<std::optional<Gate*>, int, std::optional<Gate*>> added2 = std::make_tuple(std::optional<Gate*>{end2}, qbit2, std::nullopt);
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> added2 = std::make_tuple(std::optional<Gate*>{end2}, gate_int2, std::nullopt);
     //add edge to gate
     g->edges = {added1, added2};
     //make the new gate what the previously last gate now points to
@@ -113,8 +123,13 @@ bool qcircuit::Reuse(int from, int to) {
         std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
         std::get<0>(*(this->roots[to]->findEdge(to))).emplace(end);
         std::vector<Gate*>* curr = this->getroots();
+        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* edgeToUpdate = (*this->getroots())[to]->findEdge(to);
+        *std::get<1>(*edgeToUpdate) = from;
+        while(std::get<2>(*edgeToUpdate).has_value()) {
+            edgeToUpdate = std::get<2>(*edgeToUpdate).value()->findEdge(to);
+            *std::get<1>(*edgeToUpdate) = from;
+        }
         curr->erase(curr->begin() + to);
-        printf("size is %lu\n", curr->size());
         this->setroots(curr);
         this->qbits = this->qbits - 1;
         return true;

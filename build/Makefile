@@ -57,10 +57,10 @@ RM = /opt/homebrew/Cellar/cmake/3.26.4/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse
+CMAKE_SOURCE_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build
+CMAKE_BINARY_DIR = /Users/ben/github/l2-MBQC-Qubit-Reuse/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles /Users/ben/github/l2-MBQC-Qubit-Reuse/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ben/github/l2-MBQC-Qubit-Reuse/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -155,12 +155,39 @@ gate/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gate.dir/build.make CMakeFiles/gate.dir/build
 .PHONY : gate/fast
 
+#=============================================================================
+# Target rules for targets named constants
+
+# Build rule for target.
+constants: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 constants
+.PHONY : constants
+
+# fast build rule for target.
+constants/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/constants.dir/build.make CMakeFiles/constants.dir/build
+.PHONY : constants/fast
+
+#=============================================================================
+# Target rules for targets named graph
+
+# Build rule for target.
+graph: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 graph
+.PHONY : graph
+
+# fast build rule for target.
+graph/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/graph.dir/build.make CMakeFiles/graph.dir/build
+.PHONY : graph/fast
+
 src-shared/gate.o: src-shared/gate.cxx.o
 .PHONY : src-shared/gate.o
 
 # target to build an object file
 src-shared/gate.cxx.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gate.dir/build.make CMakeFiles/gate.dir/src-shared/gate.cxx.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/constants.dir/build.make CMakeFiles/constants.dir/src-shared/gate.cxx.o
 .PHONY : src-shared/gate.cxx.o
 
 src-shared/gate.i: src-shared/gate.cxx.i
@@ -169,6 +196,7 @@ src-shared/gate.i: src-shared/gate.cxx.i
 # target to preprocess a source file
 src-shared/gate.cxx.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gate.dir/build.make CMakeFiles/gate.dir/src-shared/gate.cxx.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/constants.dir/build.make CMakeFiles/constants.dir/src-shared/gate.cxx.i
 .PHONY : src-shared/gate.cxx.i
 
 src-shared/gate.s: src-shared/gate.cxx.s
@@ -177,7 +205,32 @@ src-shared/gate.s: src-shared/gate.cxx.s
 # target to generate assembly for a file
 src-shared/gate.cxx.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gate.dir/build.make CMakeFiles/gate.dir/src-shared/gate.cxx.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/constants.dir/build.make CMakeFiles/constants.dir/src-shared/gate.cxx.s
 .PHONY : src-shared/gate.cxx.s
+
+src-shared/graph.o: src-shared/graph.cxx.o
+.PHONY : src-shared/graph.o
+
+# target to build an object file
+src-shared/graph.cxx.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/graph.dir/build.make CMakeFiles/graph.dir/src-shared/graph.cxx.o
+.PHONY : src-shared/graph.cxx.o
+
+src-shared/graph.i: src-shared/graph.cxx.i
+.PHONY : src-shared/graph.i
+
+# target to preprocess a source file
+src-shared/graph.cxx.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/graph.dir/build.make CMakeFiles/graph.dir/src-shared/graph.cxx.i
+.PHONY : src-shared/graph.cxx.i
+
+src-shared/graph.s: src-shared/graph.cxx.s
+.PHONY : src-shared/graph.s
+
+# target to generate assembly for a file
+src-shared/graph.cxx.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/graph.dir/build.make CMakeFiles/graph.dir/src-shared/graph.cxx.s
+.PHONY : src-shared/graph.cxx.s
 
 src/main.o: src/main.cxx.o
 .PHONY : src/main.o
@@ -236,11 +289,16 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... circuit"
+	@echo "... constants"
 	@echo "... gate"
+	@echo "... graph"
 	@echo "... qubit_reuse"
 	@echo "... src-shared/gate.o"
 	@echo "... src-shared/gate.i"
 	@echo "... src-shared/gate.s"
+	@echo "... src-shared/graph.o"
+	@echo "... src-shared/graph.i"
+	@echo "... src-shared/graph.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
