@@ -37,9 +37,9 @@ int main(int argc, char* argv[]) {
     //bool works = simplecircuit.Reuse(0, 2);
     //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
 
-    static qcircuit basic(3);
+    static qcircuit basic(4);
     basic.CNOT(0, 2);
-    basic.H(1);
+    basic.CNOT(1, 3);
     basic.Measure(1);
     basic.Measure(0);
     basic.Measure(2);
