@@ -12,6 +12,7 @@
 // ================================================
 
 enum GateType {
+  Blank = 0,
   ResetGate = 1,
   MeasureGate = 2,
   HadamardGate = 3,

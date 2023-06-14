@@ -11,6 +11,7 @@ class qcircuit {
 public:
     qcircuit(int rootnum);
     bool Reuse(int from, int to);
+    void Spacer(int qbit, int count);
     void H(int qbit);
     void CNOT(int qbit1, int qbit2);
     void CZ(int qbit1, int bqit2);

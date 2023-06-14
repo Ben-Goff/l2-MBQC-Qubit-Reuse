@@ -79,9 +79,25 @@ void OutputCircuit(qcircuit circuit, std::string file) {
         std::set<int> printedOneQubitGateQubits;
         for(auto g : printableGates) {
             if(g->edges.size() == 1) {
-                printedOneQubitGateQubits.insert(*std::get<1>(g->edges[0]));
+                if(g->type != Blank) {
+                    printedOneQubitGateQubits.insert(*std::get<1>(g->edges[0]));
+                }
                 switch(g->type) {
                     //first all of the one-qubit gates. This will prevent two-qubit gates from visually running over one-qubit gate
+                    case Blank:
+                    {
+                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                        int* qbit = std::get<1>(e);
+                        node n = G.newNode();
+                        GA.x(n) = layer*NODE_HORZ_SEP;
+                        GA.y(n) = (*qbit)*NODE_VERT_SEP;
+                        GA.width(n) = 0;
+                        GA.height(n) = 0;
+                        edge ej = G.newEdge(std::get<0>(currentLayer[*qbit].value()),n);
+                        GA.arrowType(ej) = ogdf::EdgeArrow::None;
+                        currentLayer[*qbit] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n, std::get<1>(currentLayer[*qbit].value()), true)};
+                        break;
+                    }
                     case ResetGate:
                     {
                         std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];

@@ -37,15 +37,87 @@ int main(int argc, char* argv[]) {
     //bool works = simplecircuit.Reuse(0, 2);
     //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
 
-    static qcircuit basic(4);
-    basic.CNOT(0, 2);
-    basic.CNOT(1, 3);
-    basic.Measure(1);
-    basic.Measure(0);
-    basic.Measure(2);
+    static qcircuit mod3(13);
+    
+    for(int i = 0; i < 13; i++) {
+      mod3.H(i);
+    }
+
+    for(int i = 1; i < 12; i+=2) {
+      mod3.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < 12; i+=2) {
+      mod3.CZ(i, i+1);
+    }
+
+    mod3.H(0);
+    mod3.H(0);
+    mod3.Measure(0);
+
+    mod3.Spacer(1, 4);
+    mod3.H(1);
+    mod3.Spacer(1, 2);
+    mod3.H(1);
+    mod3.Measure(1);
+
+    mod3.Spacer(2, 1);
+    mod3.H(2);
+    mod3.Measure(2);
+
+    mod3.Spacer(3, 5);
+    mod3.H(3);
+    mod3.Spacer(3, 1);
+    mod3.H(3);
+    mod3.Measure(3);
+
+    mod3.Spacer(4, 1);
+    mod3.H(4);
+    mod3.Measure(4);
+
+    mod3.Spacer(5, 5);
+    mod3.H(5);
+    mod3.H(5);
+    mod3.Measure(5);
+
+    mod3.Spacer(6, 10);
+    mod3.H(6);
+    mod3.H(6);
+    mod3.Measure(6);
+
+    mod3.Spacer(7, 14);
+    mod3.H(7);
+    mod3.Spacer(7, 2);
+    mod3.H(7);
+    mod3.Measure(7);
+
+    mod3.Spacer(8, 11);
+    mod3.H(8);
+    mod3.Measure(8);
+
+    mod3.Spacer(9, 15);
+    mod3.H(9);
+    mod3.Spacer(9, 1);
+    mod3.H(9);
+    mod3.Measure(9);
+
+    mod3.Spacer(10, 11);
+    mod3.H(10);
+    mod3.Measure(10);
+
+    mod3.Spacer(11, 16);
+    mod3.H(11);
+    mod3.H(11);
+    mod3.Measure(11);
+
+    mod3.Spacer(12, 20);
+    mod3.H(12);
+    mod3.H(12);
+    mod3.Measure(12);
 
 
-    OutputCircuit(basic, "output-manual");
+
+    OutputCircuit(mod3, "output-manual");
 
 
 

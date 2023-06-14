@@ -38,6 +38,12 @@ void qcircuit::H(int qbit) {
     OneQubitGate(qbit, HadamardGate);
 }
 
+void qcircuit::Spacer(int qbit, int count) {
+    for(int i = 0; i < count; i++) {
+        OneQubitGate(qbit, Blank);
+    }
+}
+
 void qcircuit::Measure(int qbit) {
     OneQubitGate(qbit, MeasureGate);
 }
