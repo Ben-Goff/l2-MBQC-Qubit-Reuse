@@ -31,4 +31,13 @@
 *.out
 *.app
 
-build/*!.gitkeep
+build/.cmake/*
+build/CMakeFiles/*
+build/*.cmake
+build/*.txt
+build/*.json
+build/*.dot
+build/*.gml
+build/*.svg
+build/Makefile
+build/qubit_reuse

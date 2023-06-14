@@ -26,10 +26,11 @@ void OutputCircuit(qcircuit circuit, std::string file) {
         node r = G.newNode();
         GA.x(r) = layer*NODE_HORZ_SEP;
         GA.y(r) = i*NODE_VERT_SEP;
-        GA.width(r) = NODE_WIDTH;
+        GA.width(r) = NODE_WIDTH + 3;
         GA.height(r) = NODE_HEIGHT;
         GA.strokeType(r) = ogdf::StrokeType::None;
         GA.label(r) = "|0〉";
+        GA.xLabel(r) = layer*NODE_HORZ_SEP + 3;
         currentLayer[i] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(r, roots[i], true)};
     }
     layer++;
@@ -59,20 +60,28 @@ void OutputCircuit(qcircuit circuit, std::string file) {
                 currentGates.insert(std::get<1>(i.value()));
             }
         }
+        std::set<Gate*> printableGates;
         for(auto g : currentGates) {
             bool printable = true;
             //for each edge in every gate which can be printed....
             for(std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e : g->edges) {
                 int* qbit = std::get<1>(e);
                 printf("the qbite is %i\n", *qbit);
-                //....we check if the qbit at that edge has printed every gate up to this gate and is ready to print, then.......
+                //....we check if the qbit at that edge has printed every gate up to this gate and is ready to print
                 if(std::get<2>(currentLayer[*qbit].value()) || std::get<1>(currentLayer[*qbit].value()) != g) {
                     printable = false;
                 }
             }
-            //we print the gate on every edge
             if(printable) {
+                printableGates.insert(g);
+            }
+        }
+        std::set<int> printedOneQubitGateQubits;
+        for(auto g : printableGates) {
+            if(g->edges.size() == 1) {
+                printedOneQubitGateQubits.insert(*std::get<1>(g->edges[0]));
                 switch(g->type) {
+                    //first all of the one-qubit gates. This will prevent two-qubit gates from visually running over one-qubit gate
                     case ResetGate:
                     {
                         std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
@@ -123,67 +132,63 @@ void OutputCircuit(qcircuit circuit, std::string file) {
                         printf("DID AN H GATE");
                         break;
                     }
-                    case CNOTGate:
-                    {
-                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e1 = g->edges[0];
-                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
-                        int* qbit1 = std::get<1>(e1);
-                        int* qbit2 = std::get<1>(e2);
-                        node n1 = G.newNode();
-                        GA.x(n1) = layer*NODE_HORZ_SEP;
-                        GA.y(n1) = (*qbit1)*NODE_VERT_SEP;
-                        GA.width(n1) = NODE_WIDTH/2;
-                        GA.height(n1) = NODE_HEIGHT/2;
-                        GA.shape(n1) = ogdf::Shape::Ellipse;
-                        GA.fillColor(n1) = ogdf::Color::Name::Black;
-                        edge ej1 = G.newEdge(std::get<0>(currentLayer[*qbit1].value()),n1);
-                        GA.arrowType(ej1) = ogdf::EdgeArrow::None;
-                        currentLayer[*qbit1] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n1, std::get<1>(currentLayer[*qbit1].value()), true)};
-                        node n2 = G.newNode();
-                        GA.x(n2) = layer*NODE_HORZ_SEP;
-                        GA.y(n2) = (*qbit2)*NODE_VERT_SEP;
-                        GA.width(n2) = NODE_WIDTH;
-                        GA.height(n2) = NODE_HEIGHT;
-                        GA.label(n2) = "+";
-                        GA.yLabel(n2) = NODE_LABEL_Y;
-                        GA.shape(n2) = ogdf::Shape::Ellipse;
-                        edge ej2 = G.newEdge(std::get<0>(currentLayer[*qbit2].value()),n2);
-                        GA.arrowType(ej2) = ogdf::EdgeArrow::None;
-                        currentLayer[*qbit2] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n2, std::get<1>(currentLayer[*qbit2].value()), true)};
-                        edge ej3 = G.newEdge(n1, n2);
-                        GA.arrowType(ej3) = ogdf::EdgeArrow::None;
-                        break;
+                    default: printf("Multi-Qubit gate flagged as One-Qubit gate\n");
+                }
+            }
+        }
+        for(auto g : printableGates) {
+            if(g->edges.size() == 2) {
+                std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e1 = g->edges[0];
+                std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
+                int qbit1 = *std::get<1>(e1);
+                int qbit2 = *std::get<1>(e2);
+                bool wontOverlapOneQubitGate = true;
+                for(int i : printedOneQubitGateQubits) {
+                    if(qbit1 < qbit2) {
+                        wontOverlapOneQubitGate = (i < qbit1 && i > qbit2);
+                    } else {
+                        wontOverlapOneQubitGate = (i > qbit1 && i < qbit2);
                     }
-                    case CZGate:
-                    {
-                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e1 = g->edges[0];
-                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
-                        int* qbit1 = std::get<1>(e1);
-                        int* qbit2 = std::get<1>(e2);
-                        node n1 = G.newNode();
-                        GA.x(n1) = layer*NODE_HORZ_SEP;
-                        GA.y(n1) = (*qbit1)*NODE_VERT_SEP;
-                        GA.width(n1) = NODE_WIDTH/2;
-                        GA.height(n1) = NODE_HEIGHT/2;
-                        GA.shape(n1) = ogdf::Shape::Ellipse;
-                        GA.fillColor(n1) = ogdf::Color::Name::Black;
-                        edge ej1 = G.newEdge(std::get<0>(currentLayer[*qbit1].value()),n1);
-                        GA.arrowType(ej1) = ogdf::EdgeArrow::None;
-                        currentLayer[*qbit1] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n1, std::get<1>(currentLayer[*qbit1].value()), true)};
-                        node n2 = G.newNode();
-                        GA.x(n2) = layer*NODE_HORZ_SEP;
-                        GA.y(n2) = (*qbit2)*NODE_VERT_SEP;
-                        GA.width(n2) = NODE_WIDTH/2;
-                        GA.height(n2) = NODE_HEIGHT/2;
-                        GA.shape(n2) = ogdf::Shape::Ellipse;
-                        GA.fillColor(n2) = ogdf::Color::Name::Black;
-                        edge ej2 = G.newEdge(std::get<0>(currentLayer[*qbit2].value()),n2);
-                        GA.arrowType(ej2) = ogdf::EdgeArrow::None;
-                        currentLayer[*qbit2] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n2, std::get<1>(currentLayer[*qbit2].value()), true)};
-                        edge ej3 = G.newEdge(n1, n2);
-                        GA.arrowType(ej3) = ogdf::EdgeArrow::None;
-                        break;
+                }
+                if(wontOverlapOneQubitGate) {
+                    node n1 = G.newNode();
+                    node n2 = G.newNode();
+                    GA.x(n1) = layer*NODE_HORZ_SEP;
+                    GA.y(n1) = (qbit1)*NODE_VERT_SEP;
+                    GA.x(n2) = layer*NODE_HORZ_SEP;
+                    GA.y(n2) = (qbit2)*NODE_VERT_SEP;
+                    GA.width(n1) = NODE_WIDTH/2;
+                    GA.height(n1) = NODE_HEIGHT/2;
+                    GA.shape(n1) = ogdf::Shape::Ellipse;
+                    GA.fillColor(n1) = ogdf::Color::Name::Black;
+                    edge ej1 = G.newEdge(std::get<0>(currentLayer[qbit1].value()),n1);
+                    GA.arrowType(ej1) = ogdf::EdgeArrow::None;
+                    currentLayer[qbit1] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n1, std::get<1>(currentLayer[qbit1].value()), true)};
+                    switch(g->type) {
+                        case CNOTGate:
+                        {
+                            GA.width(n2) = NODE_WIDTH;
+                            GA.height(n2) = NODE_HEIGHT;
+                            GA.label(n2) = "+";
+                            GA.yLabel(n2) = NODE_LABEL_Y;
+                            GA.shape(n2) = ogdf::Shape::Ellipse;
+                            break;
+                        }
+                        case CZGate:
+                        {
+                            GA.width(n2) = NODE_WIDTH/2;
+                            GA.height(n2) = NODE_HEIGHT/2;
+                            GA.shape(n2) = ogdf::Shape::Ellipse;
+                            GA.fillColor(n2) = ogdf::Color::Name::Black;
+                            break;
+                        }
+                        default: printf("One-Qubit gate flagged as Two-Qubit gate\n");
                     }
+                    edge ej2 = G.newEdge(std::get<0>(currentLayer[qbit2].value()),n2);
+                    GA.arrowType(ej2) = ogdf::EdgeArrow::None;
+                    currentLayer[qbit2] = std::optional<std::tuple<node, Gate*, bool>>{std::make_tuple(n2, std::get<1>(currentLayer[qbit2].value()), true)};
+                    edge ej3 = G.newEdge(n1, n2);
+                    GA.arrowType(ej3) = ogdf::EdgeArrow::None;
                 }
             }
         }

@@ -40,6 +40,9 @@ int main(int argc, char* argv[]) {
     static qcircuit basic(3);
     basic.CNOT(0, 2);
     basic.H(1);
+    basic.Measure(1);
+    basic.Measure(0);
+    basic.Measure(2);
 
 
     OutputCircuit(basic, "output-manual");
