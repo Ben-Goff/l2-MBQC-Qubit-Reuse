@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgraphpp.a 
-/usr/bin/ranlib libgraphpp.a

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libconstants.a "CMakeFiles/constants.dir/src-shared/gate.cxx.o"
-/usr/bin/ranlib libconstants.a
