@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcircuit.a CMakeFiles/circuit.dir/src/qcircuit.cxx.o
+/usr/bin/ranlib libcircuit.a

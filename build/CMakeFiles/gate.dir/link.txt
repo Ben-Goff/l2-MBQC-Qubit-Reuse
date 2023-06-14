@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgate.a "CMakeFiles/gate.dir/src-shared/gate.cxx.o"
+/usr/bin/ranlib libgate.a

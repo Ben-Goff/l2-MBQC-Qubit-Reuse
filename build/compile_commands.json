@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/Users/ben/github/l2-MBQC-Qubit-Reuse/build",
+  "command": "/usr/bin/clang++  -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -o CMakeFiles/circuit.dir/src/qcircuit.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src/qcircuit.cxx",
+  "file": "/Users/ben/github/l2-MBQC-Qubit-Reuse/src/qcircuit.cxx",
+  "output": "CMakeFiles/circuit.dir/src/qcircuit.cxx.o"
+},
+{
+  "directory": "/Users/ben/github/l2-MBQC-Qubit-Reuse/build",
+  "command": "/usr/bin/clang++  -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -o CMakeFiles/gate.dir/src-shared/gate.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx",
+  "file": "/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx",
+  "output": "CMakeFiles/gate.dir/src-shared/gate.cxx.o"
+},
+{
+  "directory": "/Users/ben/github/l2-MBQC-Qubit-Reuse/build",
+  "command": "/usr/bin/clang++  -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include/coin -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -o CMakeFiles/graph.dir/src-shared/graph.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/graph.cxx",
+  "file": "/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/graph.cxx",
+  "output": "CMakeFiles/graph.dir/src-shared/graph.cxx.o"
+},
+{
+  "directory": "/Users/ben/github/l2-MBQC-Qubit-Reuse/build",
+  "command": "/usr/bin/clang++  -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include/coin -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -o CMakeFiles/qubit_reuse.dir/src/main.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src/main.cxx",
+  "file": "/Users/ben/github/l2-MBQC-Qubit-Reuse/src/main.cxx",
+  "output": "CMakeFiles/qubit_reuse.dir/src/main.cxx.o"
+},
+{
+  "directory": "/Users/ben/github/l2-MBQC-Qubit-Reuse/build",
+  "command": "/usr/bin/clang++  -I/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include -isystem /Users/ben/GitHub/l2-MBQC-Qubit-Reuse/ogdf-master/include/coin -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -o CMakeFiles/constants.dir/src-shared/gate.cxx.o -c /Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx",
+  "file": "/Users/ben/github/l2-MBQC-Qubit-Reuse/src-shared/gate.cxx",
+  "output": "CMakeFiles/constants.dir/src-shared/gate.cxx.o"
+}
+]
