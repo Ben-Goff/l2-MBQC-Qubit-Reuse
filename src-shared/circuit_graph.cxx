@@ -240,29 +240,14 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::MinimizeHelper(int 
     std::vector<std::vector<std::pair<int, int>>> newReductions;
     int currentReduction = qbits - reductions[0].size();
     printf("hhh: %i\n", currentReduction);
-    bool reachedBound;
     for(auto vec : reductions) {
-        reachedBound = false;
         for(int i = 0; i < currentReduction; i++) {
             for(int j = 0; j < currentReduction; j++) {
                 circuit = qcircuit::clusterState(qbits);
                 for(std::pair<int, int> elem : vec) {
                     circuit.Reuse(elem.first, elem.second);
                 }
-                while(!circuit.Reuse(i, j)) {
-                    if(j == currentReduction - 1) {
-                        if(i == currentReduction - 1) {
-                            reachedBound = true;
-                            break;
-                        } else {
-                            i++;
-                            j = 0;
-                        }
-                    } else {
-                        j++;
-                    }
-                }
-                if(!reachedBound) {
+                if(circuit.Reuse(i, j)) {
                     std::vector<std::pair<int, int>> newReduction;
                     newReduction.reserve(vec.size() + 1);
                     newReduction.insert(newReduction.end(), vec.begin(), vec.end());
