@@ -23,8 +23,8 @@ std::set<int> Gate::UpstreamQbits() {
     std::set<int> qbits;
     for(auto e : this->edges) {
         qbits.insert(*std::get<1>(e));
-        if(std::get<2>(e).has_value()) {
-            qbits.merge(std::get<2>(e).value()->UpstreamQbits());
+        if(std::get<0>(e).has_value()) {
+            qbits.merge(std::get<0>(e).value()->UpstreamQbits());
         }
     }
     return qbits;

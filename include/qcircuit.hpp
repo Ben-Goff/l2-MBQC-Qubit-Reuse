@@ -10,6 +10,7 @@
 class qcircuit {
 public:
     qcircuit(int rootnum);
+    static qcircuit clusterState(int qbits);
     bool Reuse(int from, int to);
     void Spacer(int qbit, int count);
     void H(int qbit);
@@ -24,6 +25,8 @@ public:
     int Qbits();
     std::vector<Gate*>* getroots();
     void setroots(std::vector<Gate*>* r);
+    std::set<int> CausalCone(int qbit);
+    void ReIndexQubit(int original);
 private:
     std::vector<Gate*> roots;
     int qbits;

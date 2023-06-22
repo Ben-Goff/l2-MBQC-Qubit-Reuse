@@ -1,6 +1,6 @@
-#include "qcircuit.cxx"
-#include "../src-shared/gate.cxx"
-#include "../src-shared/graph.cxx"
+#include "../include/qcircuit.hpp"
+#include "../include-shared/gate.hpp"
+#include "../include-shared/circuit_graph.hpp"
 #include <iostream>
 
 #include <ogdf/basic/Graph.h>
@@ -17,28 +17,28 @@
 using namespace ogdf;
 
 int main(int argc, char* argv[]) {
-    printf("circuit is being built\n");
-    static qcircuit simplecircuit(3);
-    printf("now adding h gate\n");
-    simplecircuit.H(0);
-    printf("now adding cnot gate\n");
-    simplecircuit.CNOT(0, 1);
-    printf("now adding measure gate\n");
-    simplecircuit.Measure(0);
-    printf("now adding h gate\n");
-    simplecircuit.H(1);
-    printf("now adding cnot gate\n");
-    simplecircuit.CNOT(1, 2);
-    printf("now adding measure gate\n");
-    simplecircuit.Measure(1);
-    printf("now adding measure gate\n");
-    simplecircuit.Measure(2);
-    printf("now doing reuse\n");
-    //bool works = simplecircuit.Reuse(0, 2);
-    //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
+    // printf("circuit is being built\n");
+    // static qcircuit simplecircuit(3);
+    // printf("now adding h gate\n");
+    // simplecircuit.H(0);
+    // printf("now adding cnot gate\n");
+    // simplecircuit.CNOT(0, 1);
+    // printf("now adding measure gate\n");
+    // simplecircuit.Measure(0);
+    // printf("now adding h gate\n");
+    // simplecircuit.H(1);
+    // printf("now adding cnot gate\n");
+    // simplecircuit.CNOT(1, 2);
+    // printf("now adding measure gate\n");
+    // simplecircuit.Measure(1);
+    // printf("now adding measure gate\n");
+    // simplecircuit.Measure(2);
+    // printf("now doing reuse\n");
+    // //bool works = simplecircuit.Reuse(0, 2);
+    // //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
 
     static qcircuit mod3(13);
-    
+
     for(int i = 0; i < 13; i++) {
       mod3.H(i);
     }
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     mod3.H(4);
     mod3.Measure(4);
 
-    mod3.Spacer(5, 5);
+    mod3.Spacer(5, 6);
     mod3.H(5);
     mod3.H(5);
     mod3.Measure(5);
@@ -117,10 +117,110 @@ int main(int argc, char* argv[]) {
 
 
 
-    OutputCircuit(mod3, "output-manual");
+    // std::vector<std::set<int>> causalcones;
+    // for(int i = 0; i < 13; i++) {
+    //   causalcones[i] = mod3.CausalCone(i);
+    // }
+    // std::sort(causalcones.begin(), causalcones.end(), [](const std::set<int> & a, const std::set<int> & b){ return a.size() < b.size(); });
+
+    int clusterstatesize = 9;
+    // qcircuit cluster = qcircuit::clusterState(clusterstatesize);
+    // printf("done building now time for reuse. qubit 0 has cone of size %lu\n", cluster.CausalCone(0).size());
+    // bool reusing = true;
+    // std::vector<int> correct;
+    // naive search
+    // for(int i = 0; i < 8; i++) {
+    //   for(int j = 1; j < clusterstatesize; j++) {
+    //     for(int k = 0; k < clusterstatesize - 1; k++) {
+    //       for(int l = 0; l < clusterstatesize - 1; l++) {
+    //         for(int m = 0; m < clusterstatesize - 2; m++) {
+    //           for(int n = 0; n < clusterstatesize - 2; n++) {
+    //             for(int o = 0; o < clusterstatesize - 3; o++) {
+    //               for(int p = 0; p < clusterstatesize - 3; p++) {
+    //                 printf("i:%i,j:%i,k:%i,l:%i,m:%i,n:%i,o:%i,p:%i\n", i, j, k, l, m, n, o, p);
+    //                 cluster = clusterState(clusterstatesize);
+    //                 if(cluster.Reuse(i, j) && cluster.Reuse(k, l) && cluster.Reuse(m, n) && cluster.Reuse(o, p)) {
+    //                   correct.push_back(10000000*i + 1000000*j + 100000*k + 10000*l + 1000*m + 100*n + 10*o + p);
+    //                 }
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
+
+    //search which gives up on the first layer that fails
+    // for(int i = 0; i < clusterstatesize; i++) {
+    //   for(int j = 1; j < clusterstatesize; j++) {
+    //     cluster = qcircuit::clusterState(clusterstatesize);
+    //     if(cluster.Reuse(i, j)) {
+    //       for(int k = 0; k < clusterstatesize - 1; k++) {
+    //         for(int l = 0; l < clusterstatesize - 1; l++) {
+    //           if(cluster.Reuse(k, l)) {
+    //             for(int m = 0; m < clusterstatesize - 2; m++) {
+    //               for(int n = 0; n < clusterstatesize - 2; n++) {
+    //                 if(cluster.Reuse(m, n)) {
+    //                   for(int o = 0; o < clusterstatesize - 3; o++) {
+    //                     for(int p = 0; p < clusterstatesize - 3; p++) {
+    //                       if(cluster.Reuse(o, p)) {
+    //                         //printf("i:%i,j:%i,k:%i,l:%i,m:%i,n:%i,o:%i,p:%i\n", i, j, k, l, m, n, o, p);
+    //                         correct.push_back(10000000*i + 1000000*j + 100000*k + 10000*l + 1000*m + 100*n + 10*o + p);
+    //                       }
+    //                       cluster = qcircuit::clusterState(clusterstatesize);
+    //                       cluster.Reuse(i, j);
+    //                       cluster.Reuse(k, l);
+    //                       cluster.Reuse(m, n);
+    //                     }
+    //                   }
+    //                 }
+    //                 cluster = qcircuit::clusterState(clusterstatesize);
+    //                 cluster.Reuse(i, j);
+    //                 cluster.Reuse(k, l);
+    //               }
+    //             }
+    //           }
+    //           cluster = qcircuit::clusterState(clusterstatesize);
+    //           cluster.Reuse(i, j);
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
 
 
+
+    // printf("AAAAAAAAAAAAAAAAA %s, and the number of roots is %lu\n", reusing ? "true" : "false", cluster.getroots()->size());
+    //OutputCircuit(mod3, "output-manual");
+    //circuit_graph::OutputCircuit(cluster, "output-cluster3");
+    // printf("CORRECT:\n");
+    // for(int i : correct) {
+    //   printf("%i\n", i);
+    // }
+    // printf("count: %lu\n", correct.size());
+
+    // printf("in to the real stuff\n");
+
+
+    std::vector<std::vector<std::pair<int, int>>> minimize8 = circuit_graph::MinimizeClusterState(9);
+    printf("can reduce to %lu qubits\n", 9 - minimize8[0].size());
+    for(int i = 0; i < minimize8[0].size(); i++) {
+      printf("%i %i ", minimize8[0][i].first, minimize8[0][i].second);
+    }
+    printf("\n");
+    //04153545
+
+    // qcircuit cluster9 = qcircuit::clusterState(clusterstatesize);
+    // cluster9.Reuse(0, 4);
+    // cluster9.Reuse(1, 5);
+    // cluster9.Reuse(3, 5);
+    // //cluster9.Reuse(4, 5);
+
+    // circuit_graph::OutputCircuit(cluster9, "step2");
+    
 
     // Graph G;
     // GraphAttributes GA(G, GraphAttributes::all);

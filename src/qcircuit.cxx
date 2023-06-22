@@ -100,7 +100,6 @@ void qcircuit::TwoQubitGate(int qbit1, int qbit2, GateType type) {
 
 Gate* qcircuit::EndOfExecution(int qbit) {
     Gate* curr = this->roots[qbit];
-
     while(std::get<2>(*(curr->findEdge(qbit))).has_value()) {
         curr = std::get<2>(*(curr->findEdge(qbit))).value();
     }
@@ -108,38 +107,87 @@ Gate* qcircuit::EndOfExecution(int qbit) {
 }
 
 bool qcircuit::Reuse(int from, int to) {
+    if(to == from) {
+        //printf("to and from are both %i\n", from);
+        return false;
+    }
     if(from > (this->qbits - 1) || from < 0) {
-        printf("qbit %i is outside the range of the circuit\n", from);
+        //printf("qbit %i is outside the range of the circuit\n", from);
         return false;
     }
     if(to > (this->qbits - 1) || to < 0) {
-        printf("qbit %i is outside the range of the circuit\n", to);
+        //printf("qbit %i is outside the range of the circuit\n", to);
         return false;
     }
     Gate* end = this->EndOfExecution(from);
     if(end->type != MeasureGate) {
-        printf("qbit %i doesn't currently end execution with a measure gate. it ends with %i\n", from, end->type);
+        //printf("qbit %i doesn't currently end execution with a measure gate. it ends with %i\n", from, end->type);
         return false;
     }
     std::set<int> dependencies = end->UpstreamQbits();
     if(dependencies.find(to) != dependencies.end()) {
-        printf("qbit %i is dependent on qbit %i, cannot reuse\n", from, to);
+        //printf("qbit %i is dependent on qbit %i, cannot reuse\n", from, to);
+        return false;
+    } 
+    Gate* endTo = this->EndOfExecution(to);
+    std::set<int> dependenciesTo = endTo->UpstreamQbits();
+    if(dependenciesTo.find(from) != dependenciesTo.end()) {
+        //printf("qbit %i is dependent on qbit %i, cannot reuse\n", to, from);
         return false;
     } else {
+        //we have the last measure gate point to the new qbit
         std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
+        //we have the first gate of the to qbit point from the from qbit
         std::get<0>(*(this->roots[to]->findEdge(to))).emplace(end);
         std::vector<Gate*>* curr = this->getroots();
+        //find the root edge of the to qbit
         std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* edgeToUpdate = (*this->getroots())[to]->findEdge(to);
+        //chame its qbit to the from qbit
         *std::get<1>(*edgeToUpdate) = from;
         while(std::get<2>(*edgeToUpdate).has_value()) {
             edgeToUpdate = std::get<2>(*edgeToUpdate).value()->findEdge(to);
             *std::get<1>(*edgeToUpdate) = from;
         }
+        //and then we need to shift all higher number qbits down by one. the "to" index is now not used, so we start by filling in that gap and everything else goes down by one
+        for(int i = to + 1; i < this->qbits; i++) {
+            this->ReIndexQubit(i);
+        }
+        //the physical qbit that is now made available by reuse can be removed from the list of roots
         curr->erase(curr->begin() + to);
         this->setroots(curr);
+        //and the number of physical qubits goes down by one accordingly
         this->qbits = this->qbits - 1;
         return true;
     }
+}
+
+void qcircuit::ReIndexQubit(int original) {
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* edgeToUpdate = (*this->getroots())[original]->findEdge(original);
+    *std::get<1>(*edgeToUpdate) = original - 1;
+    while(std::get<2>(*edgeToUpdate).has_value()) {
+        edgeToUpdate = std::get<2>(*edgeToUpdate).value()->findEdge(original);
+        *std::get<1>(*edgeToUpdate) = original - 1;
+    }
+}
+
+std::set<int> qcircuit::CausalCone(int qbit) {
+    return EndOfExecution(qbit)->UpstreamQbits();
+}
+
+qcircuit qcircuit::clusterState(int n) {
+    qcircuit circuit(n);
+    for(int i = 1; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n; i++) {
+        circuit.Measure(i);
+    }
+    return circuit;
 }
 
 
