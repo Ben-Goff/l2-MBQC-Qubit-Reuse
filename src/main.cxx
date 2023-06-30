@@ -2,6 +2,7 @@
 #include "../include-shared/gate.hpp"
 #include "../include-shared/circuit_graph.hpp"
 #include <iostream>
+#include <fstream>
 
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/graph_generators.h>
@@ -37,226 +38,161 @@ int main(int argc, char* argv[]) {
     // //bool works = simplecircuit.Reuse(0, 2);
     // //printf("%s, and the number of roots is %lu\n", works ? "true" : "false", simplecircuit.getroots()->size());
 
-    static qcircuit mod3(13);
+    // static qcircuit mod3(13);
 
-    for(int i = 0; i < 13; i++) {
-      mod3.H(i);
-    }
-
-    for(int i = 1; i < 12; i+=2) {
-      mod3.CZ(i, i+1);
-    }
-
-    for(int i = 0; i < 12; i+=2) {
-      mod3.CZ(i, i+1);
-    }
-
-    mod3.H(0);
-    mod3.H(0);
-    mod3.Measure(0);
-
-    mod3.Spacer(1, 4);
-    mod3.H(1);
-    mod3.Spacer(1, 2);
-    mod3.H(1);
-    mod3.Measure(1);
-
-    mod3.Spacer(2, 1);
-    mod3.H(2);
-    mod3.Measure(2);
-
-    mod3.Spacer(3, 5);
-    mod3.H(3);
-    mod3.Spacer(3, 1);
-    mod3.H(3);
-    mod3.Measure(3);
-
-    mod3.Spacer(4, 1);
-    mod3.H(4);
-    mod3.Measure(4);
-
-    mod3.Spacer(5, 6);
-    mod3.H(5);
-    mod3.H(5);
-    mod3.Measure(5);
-
-    mod3.Spacer(6, 10);
-    mod3.H(6);
-    mod3.H(6);
-    mod3.Measure(6);
-
-    mod3.Spacer(7, 14);
-    mod3.H(7);
-    mod3.Spacer(7, 2);
-    mod3.H(7);
-    mod3.Measure(7);
-
-    mod3.Spacer(8, 11);
-    mod3.H(8);
-    mod3.Measure(8);
-
-    mod3.Spacer(9, 15);
-    mod3.H(9);
-    mod3.Spacer(9, 1);
-    mod3.H(9);
-    mod3.Measure(9);
-
-    mod3.Spacer(10, 11);
-    mod3.H(10);
-    mod3.Measure(10);
-
-    mod3.Spacer(11, 16);
-    mod3.H(11);
-    mod3.H(11);
-    mod3.Measure(11);
-
-    mod3.Spacer(12, 20);
-    mod3.H(12);
-    mod3.H(12);
-    mod3.Measure(12);
-
-
-
-    // std::vector<std::set<int>> causalcones;
     // for(int i = 0; i < 13; i++) {
-    //   causalcones[i] = mod3.CausalCone(i);
+    //   mod3.H(i);
     // }
-    // std::sort(causalcones.begin(), causalcones.end(), [](const std::set<int> & a, const std::set<int> & b){ return a.size() < b.size(); });
 
-    int clusterstatesize = 9;
-    // qcircuit cluster = qcircuit::clusterState(clusterstatesize);
-    // printf("done building now time for reuse. qubit 0 has cone of size %lu\n", cluster.CausalCone(0).size());
-    // bool reusing = true;
-    // std::vector<int> correct;
-    // naive search
-    // for(int i = 0; i < 8; i++) {
-    //   for(int j = 1; j < clusterstatesize; j++) {
-    //     for(int k = 0; k < clusterstatesize - 1; k++) {
-    //       for(int l = 0; l < clusterstatesize - 1; l++) {
-    //         for(int m = 0; m < clusterstatesize - 2; m++) {
-    //           for(int n = 0; n < clusterstatesize - 2; n++) {
-    //             for(int o = 0; o < clusterstatesize - 3; o++) {
-    //               for(int p = 0; p < clusterstatesize - 3; p++) {
-    //                 printf("i:%i,j:%i,k:%i,l:%i,m:%i,n:%i,o:%i,p:%i\n", i, j, k, l, m, n, o, p);
-    //                 cluster = clusterState(clusterstatesize);
-    //                 if(cluster.Reuse(i, j) && cluster.Reuse(k, l) && cluster.Reuse(m, n) && cluster.Reuse(o, p)) {
-    //                   correct.push_back(10000000*i + 1000000*j + 100000*k + 10000*l + 1000*m + 100*n + 10*o + p);
-    //                 }
-    //               }
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
+    // for(int i = 1; i < 12; i+=2) {
+    //   mod3.CZ(i, i+1);
+    // }
+
+    // for(int i = 0; i < 12; i+=2) {
+    //   mod3.CZ(i, i+1);
+    // }
+
+    // mod3.H(0);
+    // mod3.H(0);
+    // mod3.Measure(0);
+
+    // mod3.Spacer(1, 4);
+    // mod3.H(1);
+    // mod3.Spacer(1, 2);
+    // mod3.H(1);
+    // mod3.Measure(1);
+
+    // mod3.Spacer(2, 1);
+    // mod3.H(2);
+    // mod3.Measure(2);
+
+    // mod3.Spacer(3, 5);
+    // mod3.H(3);
+    // mod3.Spacer(3, 1);
+    // mod3.H(3);
+    // mod3.Measure(3);
+
+    // mod3.Spacer(4, 1);
+    // mod3.H(4);
+    // mod3.Measure(4);
+
+    // mod3.Spacer(5, 6);
+    // mod3.H(5);
+    // mod3.H(5);
+    // mod3.Measure(5);
+
+    // mod3.Spacer(6, 10);
+    // mod3.H(6);
+    // mod3.H(6);
+    // mod3.Measure(6);
+
+    // mod3.Spacer(7, 14);
+    // mod3.H(7);
+    // mod3.Spacer(7, 2);
+    // mod3.H(7);
+    // mod3.Measure(7);
+
+    // mod3.Spacer(8, 11);
+    // mod3.H(8);
+    // mod3.Measure(8);
+
+    // mod3.Spacer(9, 15);
+    // mod3.H(9);
+    // mod3.Spacer(9, 1);
+    // mod3.H(9);
+    // mod3.Measure(9);
+
+    // mod3.Spacer(10, 11);
+    // mod3.H(10);
+    // mod3.Measure(10);
+
+    // mod3.Spacer(11, 16);
+    // mod3.H(11);
+    // mod3.H(11);
+    // mod3.Measure(11);
+
+    // mod3.Spacer(12, 20); 
+    // mod3.H(12);
+    // mod3.H(12);
+    // mod3.Measure(12);
+
+    //qubit reduction:
+    //4->3, 5->4, 6-> 4, 7-> 5, 8->5, 9->5, 10->5, 11->5, 12->6, 13->6, 14->6, 15->7, 16->7, 17 -> 7, 18->7, 19->7, 20->8, 30->10
+
+    //depth
+    // 10->8, 12->8, 18->12, 24->14, 30->16
+
+    //roughly log base 1.5
+    int clusterstatesize = 30;
+    // std::vector<std::vector<std::pair<int, int>>> minimize = circuit_graph::ThreadedMinimizeClusterState(clusterstatesize, 11);
+    // FILE * fileWriteout;
+    // for(int j = 0; j < minimize.size(); j++) {
+    //   qcircuit clust = qcircuit::clusterState(clusterstatesize);
+    //   int totalCausal = 0;
+    //   for(std::set<int> s : clust.CircuitCausalCone()) {
+    //     totalCausal+=s.size();
     //   }
-    // }
-
-
-    //search which gives up on the first layer that fails
-    // for(int i = 0; i < clusterstatesize; i++) {
-    //   for(int j = 1; j < clusterstatesize; j++) {
-    //     cluster = qcircuit::clusterState(clusterstatesize);
-    //     if(cluster.Reuse(i, j)) {
-    //       for(int k = 0; k < clusterstatesize - 1; k++) {
-    //         for(int l = 0; l < clusterstatesize - 1; l++) {
-    //           if(cluster.Reuse(k, l)) {
-    //             for(int m = 0; m < clusterstatesize - 2; m++) {
-    //               for(int n = 0; n < clusterstatesize - 2; n++) {
-    //                 if(cluster.Reuse(m, n)) {
-    //                   for(int o = 0; o < clusterstatesize - 3; o++) {
-    //                     for(int p = 0; p < clusterstatesize - 3; p++) {
-    //                       if(cluster.Reuse(o, p)) {
-    //                         //printf("i:%i,j:%i,k:%i,l:%i,m:%i,n:%i,o:%i,p:%i\n", i, j, k, l, m, n, o, p);
-    //                         correct.push_back(10000000*i + 1000000*j + 100000*k + 10000*l + 1000*m + 100*n + 10*o + p);
-    //                       }
-    //                       cluster = qcircuit::clusterState(clusterstatesize);
-    //                       cluster.Reuse(i, j);
-    //                       cluster.Reuse(k, l);
-    //                       cluster.Reuse(m, n);
-    //                     }
-    //                   }
-    //                 }
-    //                 cluster = qcircuit::clusterState(clusterstatesize);
-    //                 cluster.Reuse(i, j);
-    //                 cluster.Reuse(k, l);
-    //               }
-    //             }
-    //           }
-    //           cluster = qcircuit::clusterState(clusterstatesize);
-    //           cluster.Reuse(i, j);
-    //         }
-    //       }
+    //   fprintf(fileWriteout, "(%i) ", totalCausal);
+    //   for(int i = 0; i < minimize[0].size(); i++) {
+    //     clust.Reuse(minimize[j][i].first, minimize[j][i].second);
+    //     totalCausal = 0;
+    //     for(std::set<int> s : clust.CircuitCausalCone()) {
+    //       totalCausal+=s.size();
     //     }
+    //     fprintf(fileWriteout, "%i %i (%i) ", minimize[j][i].first, minimize[j][i].second, totalCausal);
     //   }
+    //   totalCausal = 0;
+    //   for(std::set<int> s : clust.CircuitCausalCone()) {
+    //     totalCausal+=s.size();
+    //   }
+    //   fprintf(fileWriteout, "depth: %i, cc: %i\n", clust.CircuitDepth(), totalCausal);
     // }
+    // fclose(fileWriteout);
+    // printf("can reduce to %lu qubits\n", clusterstatesize - minimize[0].size());
+    // printf("there are %lu ways to do this\n", minimize.size());
+
+    qcircuit cluster9 = qcircuit::clusterState(clusterstatesize);
+    std::vector<std::vector<std::pair<int, int>>> minimizeHeuristic = circuit_graph::CausalConeHeuristicReduction(cluster9.CircuitCausalCone());
 
 
-
-
-    // printf("AAAAAAAAAAAAAAAAA %s, and the number of roots is %lu\n", reusing ? "true" : "false", cluster.getroots()->size());
-    //OutputCircuit(mod3, "output-manual");
-    //circuit_graph::OutputCircuit(cluster, "output-cluster3");
-    // printf("CORRECT:\n");
-    // for(int i : correct) {
-    //   printf("%i\n", i);
-    // }
-    // printf("count: %lu\n", correct.size());
-
-    // printf("in to the real stuff\n");
-
-
-    std::vector<std::vector<std::pair<int, int>>> minimize8 = circuit_graph::MinimizeClusterState(9);
-    printf("can reduce to %lu qubits\n", 9 - minimize8[0].size());
-    for(int i = 0; i < minimize8[0].size(); i++) {
-      printf("%i %i ", minimize8[0][i].first, minimize8[0][i].second);
+    for(int j = 0; j < minimizeHeuristic.size(); j++) {
+      qcircuit clust = qcircuit::clusterState(clusterstatesize);
+      int totalCausal = 0;
+      for(std::set<int> s : clust.CircuitCausalCone()) {
+        totalCausal+=s.size();
+      }
+      printf("(%i) ", totalCausal);
+      for(int i = 0; i < minimizeHeuristic[j].size(); i++) {
+        clust.Reuse(minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second);
+        totalCausal = 0;
+        for(std::set<int> s : clust.CircuitCausalCone()) {
+          totalCausal+=s.size();
+        }
+        printf("%i %i (%i) ", minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second, totalCausal);
+      }
+      totalCausal = 0;
+      for(std::set<int> s : clust.CircuitCausalCone()) {
+        totalCausal+=s.size();
+      }
+      printf("depth: %i, cc: %i\n", clust.CircuitDepth(), totalCausal);
     }
-    printf("\n");
-    //04153545
+    printf("total reductions: %lu\n", minimizeHeuristic.size());
 
-    // qcircuit cluster9 = qcircuit::clusterState(clusterstatesize);
-    // cluster9.Reuse(0, 4);
-    // cluster9.Reuse(1, 5);
-    // cluster9.Reuse(3, 5);
-    // //cluster9.Reuse(4, 5);
+    qcircuit clusty = qcircuit::clusterState(clusterstatesize);
+    clusty.Reuse(16, 19);
+    clusty.Reuse(14, 18);
+    clusty.Reuse(12, 17);
+    clusty.Reuse(11, 15);
+    clusty.Reuse(10, 13);
+    clusty.Reuse(8, 14);
+    clusty.Reuse(3, 0);
+    clusty.Reuse(4, 0);
+    clusty.Reuse(5, 1);
+    clusty.Reuse(6, 0);
+    clusty.Reuse(2, 6);
+    clusty.Reuse(0, 8);
 
-    // circuit_graph::OutputCircuit(cluster9, "step2");
-    
-
-    // Graph G;
-    // GraphAttributes GA(G, GraphAttributes::all);
-    //     node left = G.newNode();
-    //     GA.x(left) = 0;
-    //     GA.y(left) = 0;
-    //     GA.width(left) = 10;
-    //     GA.height(left) = 10;
-    //     //GA.strokeColor(left) = ogdf::Color::Name::Orange;
-    //     //GA.label(left) = "+";
-    //     //GA.zLabel(left) = 50;
-    //     GA.fillPattern(left) = ogdf::FillPattern::DiagonalCross;
-    //     GA.fillBgColor(left) = ogdf::Color::Name::Green;
-        
-
-    //     // node bottom = G.newNode();
-    //     // GA.x(bottom) = 500;
-    //     // GA.y(bottom) = -200;
-    //     // GA.width(bottom) = 10;
-    //     // GA.height(bottom) = 10;
-    //     // GA.fillColor(bottom) = ogdf::Color::Name::Purple;
-    //     // GA.fillPattern(bottom) = ogdf::FillPattern::BackwardDiagonal;
-    //     // GA.shape(bottom) = ogdf::Shape::Rect;
-    //     // GA.fillBgColor(left) = ogdf::Color::Name::Green;
-    //     // //GA.label(bottom) = "H";
-    //     // //GA.yLabel(bottom) = 1;
- 
-    //     // edge e = G.newEdge(left,bottom);
-    //     // // DPolyline &p = GA.bends(e);
-    //     // // p.pushBack(DPoint(10,-20*i));
-    //     // // p.pushBack(DPoint(20*(LEN-i),-10));
-
-    // GraphIO::write(GA, "output-manual.gml", GraphIO::writeGML);
-    // GraphIO::write(GA, "output-manual.svg", GraphIO::drawSVG);
-
-
+    circuit_graph::OutputCircuit(clusty, "output_circuit3");
 
 
     return 0;

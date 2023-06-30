@@ -106,6 +106,32 @@ Gate* qcircuit::EndOfExecution(int qbit) {
     return curr;
 }
 
+void qcircuit::SafeReuse(int from, int to) {
+    Gate* end = this->EndOfExecution(from);
+    //we have the last measure gate point to the new qbit
+    std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
+    //we have the first gate of the to qbit point from the from qbit
+    std::get<0>(*(this->roots[to]->findEdge(to))).emplace(end);
+    std::vector<Gate*>* curr = this->getroots();
+    //find the root edge of the to qbit
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* edgeToUpdate = (*this->getroots())[to]->findEdge(to);
+    //chame its qbit to the from qbit
+    *std::get<1>(*edgeToUpdate) = from;
+    while(std::get<2>(*edgeToUpdate).has_value()) {
+        edgeToUpdate = std::get<2>(*edgeToUpdate).value()->findEdge(to);
+        *std::get<1>(*edgeToUpdate) = from;
+    }
+    //and then we need to shift all higher number qbits down by one. the "to" index is now not used, so we start by filling in that gap and everything else goes down by one
+    for(int i = to + 1; i < this->qbits; i++) {
+        this->ReIndexQubit(i);
+    }
+    //the physical qbit that is now made available by reuse can be removed from the list of roots
+    curr->erase(curr->begin() + to);
+    this->setroots(curr);
+    //and the number of physical qubits goes down by one accordingly
+    this->qbits = this->qbits - 1;
+}
+
 bool qcircuit::Reuse(int from, int to) {
     if(to == from) {
         //printf("to and from are both %i\n", from);
@@ -171,7 +197,9 @@ void qcircuit::ReIndexQubit(int original) {
 }
 
 std::set<int> qcircuit::CausalCone(int qbit) {
-    return EndOfExecution(qbit)->UpstreamQbits();
+    std::set<int> ret = EndOfExecution(qbit)->UpstreamQbits();
+    ret.insert(qbit);
+    return ret;
 }
 
 qcircuit qcircuit::clusterState(int n) {
@@ -188,6 +216,32 @@ qcircuit qcircuit::clusterState(int n) {
         circuit.Measure(i);
     }
     return circuit;
+}
+
+std::vector<std::set<int>> qcircuit::CircuitCausalCone() {
+    std::vector<std::set<int>> ret(this->qbits);
+    for(int i = 0; i < this->qbits; i++) {
+        ret[i] = this->CausalCone(i);
+    }
+    return ret;
+}
+
+
+//returns the depth of the circuit by finding which qbit has the most gates
+int qcircuit::CircuitDepth() {
+    Gate* curr;
+    int depth = 0;
+    int qbitDepth = 0;
+    for(int i = 0; i < qbits; i++) {
+        curr = this->roots[i];
+        int qbitDepth = 1;
+        while(std::get<2>(*(curr->findEdge(i))).has_value()) {
+            qbitDepth++;
+            curr = std::get<2>(*(curr->findEdge(i))).value();
+        }
+        depth = std::max(depth, qbitDepth);
+    }
+    return depth;
 }
 
 

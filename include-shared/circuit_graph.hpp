@@ -24,7 +24,7 @@
 
 //using namespace ogdf;
 
-class circuit_graph {
+struct circuit_graph {
     public:
     static void OutputCircuit(qcircuit circuit, std::string file);
 
@@ -32,5 +32,7 @@ class circuit_graph {
 
     static std::vector<std::vector<std::pair<int, int>>> MinimizeClusterState(int qbits);
 
-    static std::vector<std::vector<std::pair<int, int>>> MinimizeHelper(int qbits, std::vector<std::vector<std::pair<int, int>>> reductions);
+    static std::vector<std::vector<std::pair<int, int>>> ThreadedMinimizeClusterState(int qbits, int threads);
+
+    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::set<int>> circuit);
 };

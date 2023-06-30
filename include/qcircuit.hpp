@@ -12,6 +12,7 @@ public:
     qcircuit(int rootnum);
     static qcircuit clusterState(int qbits);
     bool Reuse(int from, int to);
+    void SafeReuse(int from, int to);
     void Spacer(int qbit, int count);
     void H(int qbit);
     void CNOT(int qbit1, int qbit2);
@@ -27,6 +28,8 @@ public:
     void setroots(std::vector<Gate*>* r);
     std::set<int> CausalCone(int qbit);
     void ReIndexQubit(int original);
+    std::vector<std::set<int>> CircuitCausalCone();
+    int CircuitDepth();
 private:
     std::vector<Gate*> roots;
     int qbits;
