@@ -439,8 +439,8 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
                             int improvement = leastAdditions - conesIncrease;
 
                             for(int l = slack; (l - improvement) >= 0; l--) {
-                                nextReductionStep[l] = nextReductionStep[l - improvement];
-                                printf("yep %p %p\n", &nextReductionStep[l], &nextReductionStep[l - improvement]);
+                                std::pair<int, std::pair<int, int>>* d = nextReductionStep[l - improvement].data();
+                                nextReductionStep[l].assign(d, d + nextReductionStep[l - improvement].size());
                             }
                             for(int l = 0; l < improvement && l <= slack; l++) {
                                 nextReductionStep[l].clear();
