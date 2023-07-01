@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
     // 10->8, 12->8, 18->12, 24->14, 30->16
 
     //roughly log base 1.5
-    int clusterstatesize = 25;
+    int clusterstatesize = 6;
     // std::vector<std::vector<std::pair<int, int>>> minimize = circuit_graph::ThreadedMinimizeClusterState(clusterstatesize, 11);
     // FILE * fileWriteout;
     // for(int j = 0; j < minimize.size(); j++) {

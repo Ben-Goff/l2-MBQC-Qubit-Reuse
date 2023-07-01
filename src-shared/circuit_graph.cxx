@@ -440,6 +440,7 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
 
                             for(int l = slack; (l - improvement) >= 0; l--) {
                                 nextReductionStep[l] = nextReductionStep[l - improvement];
+                                printf("yep %p %p\n", &nextReductionStep[l], &nextReductionStep[l - improvement]);
                             }
                             for(int l = 0; l < improvement && l <= slack; l++) {
                                 nextReductionStep[l].clear();
