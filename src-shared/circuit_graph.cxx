@@ -392,22 +392,21 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
     //the elements are pointers so that they can be easily shifted up as leastAdditions is reduced
     std::vector<std::vector<std::pair<int, std::pair<int, int>>>> nextReductionStep(slack + 1);
 
-
-
     int conesIncrease;
+    int circuitConeSize;
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     std::set<int> difference;
     for(int k = 0; k < reductions.size(); k++) {
         std::vector<std::set<int>> circuit = circuits[k];
+        circuitConeSize = 0;
+        for(std::set<int> s : circuit) {
+            circuitConeSize+=s.size();
+        }
         for(int i = 0; i < qbits; i++) {
             for(int j = 0; j < qbits; j++) {
-                if(i != j && circuit[i].count(j) == 0 && circuit[j].count(i) == 0) {
-                    conesIncrease = 0;
-
-                    //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE
-                    for(std::set<int> s : circuit) {
-                        conesIncrease+=s.size();
-                    }
+                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0) {
+                    //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE. TO REVERT, MAKE IT EQUAL TO ZERO
+                    conesIncrease = circuitConeSize;
 
                     //reusing from i to j means concatenating causal cone of i to causal cone of all qbits that have j in their causal cone
                     std::set<int> cone;
@@ -433,31 +432,18 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
                     //and then getting rid of cc of j
                     conesIncrease-=circuit[j].size();
 
-                    //this can be made more efficient
-                    //no copying, just maintain slack + 1 lists, one for each count of additions. then no copying
+                    //no copying, just maintain slack + 1 lists, one for each count of additions
                     if(conesIncrease <= leastAdditions + slack) {
                         std::pair<int, int> pair = std::make_pair(i, j);
                         if(conesIncrease < leastAdditions) {
                             int improvement = leastAdditions - conesIncrease;
 
-                            int totalredccc = 0;
-                            for(auto rrrrr : nextReductionStep) {
-                                totalredccc += rrrrr.size();
-                            }
-
                             for(int l = slack; (l - improvement) >= 0; l--) {
                                 nextReductionStep[l] = nextReductionStep[l - improvement];
                             }
-
-                            totalredccc = 0;
-                            for(auto rrrrr : nextReductionStep) {
-                                totalredccc += rrrrr.size();
-                            }
-
                             for(int l = 0; l < improvement && l <= slack; l++) {
                                 nextReductionStep[l].clear();
                             }
-
                             leastAdditions = conesIncrease;
                             nextReductionStep[0].push_back(std::make_pair(k, pair));
                         } else {
@@ -469,24 +455,6 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
         }
     }
 
-    // USED TO DEBUG: will print out size of calculates and actual causal cones to see if there is a difference
-    // for(std::pair<int, std::pair<int, std::pair<int, int>>> pp : nextReductionStep) {
-    //     qcircuit eleven = qcircuit::clusterState(11);
-    //     std::vector<std::pair<int, int>> thisreduc = reductions[pp.second.first];
-    //     for(std::pair<int, int> w : thisreduc) {
-    //         eleven.Reuse(w.first, w.second);
-    //     }
-    //     eleven.Reuse(pp.second.second.first, pp.second.second.second);
-    //     int actualCC = 0;
-    //     for(std::set<int> s : eleven.CircuitCausalCone()) {
-    //         actualCC+=s.size();
-    //     }
-    //     int supposedCC = pp.first;
-    //     if(supposedCC != actualCC) {
-    //         printf("ERROR: %i, calculated as %i, but should be %i for reduction %i %i\n", supposedCC - actualCC, supposedCC, actualCC, pp.second.second.first, pp.second.second.second);
-    //     }
-    // }
-
     std::vector<std::vector<std::pair<int, int>>> newReductions;
     std::vector<std::vector<std::set<int>>> reducedCircuits;
     for(std::vector<std::pair<int, std::pair<int, int>>> vec : nextReductionStep) {
@@ -495,8 +463,6 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
             std::vector<std::pair<int, int>> newReduction = reductions[r.first];
             newReduction.push_back(r.second);
             newReductions.push_back(newReduction);
-
-
 
             //this is where we will store the new causal cones
             std::vector<std::set<int>> reducedCircuit(qbits);
@@ -510,8 +476,7 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
                         std::inserter(reducedCircuit[k], reducedCircuit[k].begin()));
                     } else {
                         //if it is not, we just copy
-                        std::copy(currOrigCircuit[k].begin(), currOrigCircuit[k].end(),
-                        std::inserter(reducedCircuit[k], reducedCircuit[k].begin()));
+                        reducedCircuit[k] = currOrigCircuit[k];
                     }
                 }
             }
@@ -541,11 +506,6 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
             reducedCircuits.push_back(reducedCircuit);
         }
     }
-
-    // //free the vectors storing reductions for this step, they now have been all added to newReductions and reducedCircuits
-    // for(std::vector<std::pair<int, std::pair<int, int>>>* ptr : nextReductionStep) {
-    //     std::free(ptr);
-    // }
 
     if(newReductions.size() == 0) {
         return input;
