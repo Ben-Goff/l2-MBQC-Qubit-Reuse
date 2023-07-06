@@ -1,8 +1,13 @@
 #include "../include/qcircuit.hpp"
 #include "../include-shared/gate.hpp"
 #include "../include-shared/circuit_graph.hpp"
+#include "../include-shared/chp_simulation.hpp"
 #include <iostream>
 #include <fstream>
+extern "C" {
+  #include "../include/chp.h"
+  #include <time.h>
+}
 
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/graph_generators.h>
@@ -151,34 +156,34 @@ int main(int argc, char* argv[]) {
     // printf("can reduce to %lu qubits\n", clusterstatesize - minimize[0].size());
     // printf("there are %lu ways to do this\n", minimize.size());
 
-    qcircuit cluster9 = qcircuit::clusterState(clusterstatesize);
-    std::vector<std::vector<std::pair<int, int>>> minimizeHeuristic = circuit_graph::CausalConeHeuristicReduction(cluster9.CircuitCausalCone());
+    // qcircuit cluster9 = qcircuit::clusterState(clusterstatesize);
+    // std::vector<std::vector<std::pair<int, int>>> minimizeHeuristic = circuit_graph::CausalConeHeuristicReduction(cluster9.CircuitCausalCone());
 
 
-    for(int j = 0; j < minimizeHeuristic.size(); j++) {
-      qcircuit clust = qcircuit::clusterState(clusterstatesize);
-      int totalCausal = 0;
-      for(std::set<int> s : clust.CircuitCausalCone()) {
-        totalCausal+=s.size();
-      }
-      printf("(%i) ", totalCausal);
-      for(int i = 0; i < minimizeHeuristic[j].size(); i++) {
-        clust.Reuse(minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second);
-        totalCausal = 0;
-        for(std::set<int> s : clust.CircuitCausalCone()) {
-          totalCausal+=s.size();
-        }
-        printf("%i %i (%i) ", minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second, totalCausal);
-      }
-      totalCausal = 0;
-      for(std::set<int> s : clust.CircuitCausalCone()) {
-        totalCausal+=s.size();
-      }
-      printf("depth: %i, cc: %i\n", clust.CircuitDepth(), totalCausal);
-    }
-    printf("total reductions: %lu\n", minimizeHeuristic.size());
+    // for(int j = 0; j < minimizeHeuristic.size(); j++) {
+    //   qcircuit clust = qcircuit::clusterState(clusterstatesize);
+    //   int totalCausal = 0;
+    //   for(std::set<int> s : clust.CircuitCausalCone()) {
+    //     totalCausal+=s.size();
+    //   }
+    //   printf("(%i) ", totalCausal);
+    //   for(int i = 0; i < minimizeHeuristic[j].size(); i++) {
+    //     clust.Reuse(minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second);
+    //     totalCausal = 0;
+    //     for(std::set<int> s : clust.CircuitCausalCone()) {
+    //       totalCausal+=s.size();
+    //     }
+    //     printf("%i %i (%i) ", minimizeHeuristic[j][i].first, minimizeHeuristic[j][i].second, totalCausal);
+    //   }
+    //   totalCausal = 0;
+    //   for(std::set<int> s : clust.CircuitCausalCone()) {
+    //     totalCausal+=s.size();
+    //   }
+    //   printf("depth: %i, cc: %i\n", clust.CircuitDepth(), totalCausal);
+    // }
+    // printf("total reductions: %lu\n", minimizeHeuristic.size());
 
-    qcircuit clusty = qcircuit::clusterState(clusterstatesize);
+    qcircuit clusty = qcircuit::hadamardClusterState(clusterstatesize);
     clusty.Reuse(16, 19);
     clusty.Reuse(14, 18);
     clusty.Reuse(12, 17);
@@ -191,9 +196,11 @@ int main(int argc, char* argv[]) {
     clusty.Reuse(6, 0);
     clusty.Reuse(2, 6);
     clusty.Reuse(0, 8);
-
     circuit_graph::OutputCircuit(clusty, "output_circuit3");
 
+    qcircuit simmy = qcircuit::hadamardClusterState(clusterstatesize);
+    bool equiv = chp_simulation::equivalent(clusty, simmy);
+    printf("are they equiv: %s\n", equiv ? "true" : "false");
 
     return 0;
 }

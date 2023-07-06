@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 
-project(ogdf-user-example CXX)
+project(ogdf-user-example CXX C)
 
 set(OGDF_CONFIG_SEARCH_PATH PATH ${PROJECT_SOURCE_DIR}/ogdf-master/)
 
@@ -20,16 +20,26 @@ target_link_libraries(qubit_reuse OGDF)
 # add_subdirectory(${PROJECT_SOURCE_DIR}/ogdf-master)
 
 add_library(circuit ${PROJECT_SOURCE_DIR}/src/qcircuit.cxx)
-add_library(gate ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
-add_library(constants ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
 target_include_directories(circuit PUBLIC ${PROJECT_SOURCE_DIR}/src)
+
+add_library(gate ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
 target_include_directories(gate PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+
+add_library(constants ${PROJECT_SOURCE_DIR}/src-shared/gate.cxx)
 target_include_directories(constants PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
 
 add_library(circuit_graph ${PROJECT_SOURCE_DIR}/src-shared/circuit_graph.cxx)
 target_include_directories(circuit_graph PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
 target_include_directories(circuit_graph PRIVATE ${OGDF_INCLUDE_DIRS})
 target_link_libraries(circuit_graph OGDF)
+
+add_library(chp ${PROJECT_SOURCE_DIR}/src/chp.c)
+target_include_directories(chp PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+target_include_directories(chp PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+add_library(chp_simulation ${PROJECT_SOURCE_DIR}/src-shared/chp_simulation.cxx)
+target_include_directories(chp_simulation PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
+target_include_directories(chp_simulation PUBLIC ${PROJECT_SOURCE_DIR}/include-shared)
 
 # add_library(circuit_graph ${PROJECT_SOURCE_DIR}/src-shared/circuit_graph.cxx)
 # target_include_directories(gate PUBLIC ${PROJECT_SOURCE_DIR}/src-shared)
@@ -45,6 +55,8 @@ target_link_libraries(circuit_graph OGDF)
 # add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/src/main.cxx)
 target_link_libraries(qubit_reuse circuit)
 target_link_libraries(qubit_reuse gate)
+target_link_libraries(qubit_reuse chp_simulation)
+target_link_libraries(qubit_reuse chp)
 target_link_libraries(qubit_reuse circuit_graph)
 target_link_libraries(constants circuit_graph)
 

@@ -16,6 +16,7 @@ qcircuit::qcircuit(int rootnum) {
     }
     this->roots = *r;
     this->qbits = rootnum;
+    this->logicalQubits = rootnum;
 }
 
 std::vector<Gate*>* qcircuit::getroots() {
@@ -28,6 +29,10 @@ void qcircuit::setroots(std::vector<Gate*>* r) {
 
 int qcircuit::Qbits() {
     return this->qbits;
+}
+
+int qcircuit::LogicalQbits() {
+    return this->logicalQubits;
 }
 
 void qcircuit::Reset(int qbit) {
@@ -57,12 +62,15 @@ void qcircuit::CNOT(int qbit1, int qbit2) {
 }
 
 void qcircuit::OneQubitGate(int qbit, GateType type) {
+
     //find the last gate on qbit
     Gate* end = this->EndOfExecution(qbit);
     //create new gate
     Gate* g = new Gate;
     //set gate type
     g->type = type;
+    //set the measure logical qbit if it is a measure gate
+    g->measureQbit = ((type == MeasureGate) ? (std::optional<int>{qbit}) : (std::nullopt));
     //make pointer for qbit int
     int* gate_int = new int;
     *gate_int = qbit;
@@ -204,6 +212,26 @@ std::set<int> qcircuit::CausalCone(int qbit) {
 
 qcircuit qcircuit::clusterState(int n) {
     qcircuit circuit(n);
+    for(int i = 1; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n; i++) {
+        circuit.Measure(i);
+    }
+    return circuit;
+}
+
+qcircuit qcircuit::hadamardClusterState(int n) {
+    qcircuit circuit(n);
+    for(int i = 0; i < n; i++) {
+        circuit.H(i);
+    }
+
     for(int i = 1; i < n-1; i+=2) {
         circuit.CZ(i, i+1);
     }

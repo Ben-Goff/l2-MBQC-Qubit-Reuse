@@ -11,6 +11,7 @@ class qcircuit {
 public:
     qcircuit(int rootnum);
     static qcircuit clusterState(int qbits);
+    static qcircuit hadamardClusterState(int n);
     bool Reuse(int from, int to);
     void SafeReuse(int from, int to);
     void Spacer(int qbit, int count);
@@ -24,6 +25,7 @@ public:
     void OneQubitGate(int qbit, GateType type);
     void TwoQubitGate(int qbit1, int qbit2, GateType type);
     int Qbits();
+    int LogicalQbits();
     std::vector<Gate*>* getroots();
     void setroots(std::vector<Gate*>* r);
     std::set<int> CausalCone(int qbit);
@@ -33,4 +35,5 @@ public:
 private:
     std::vector<Gate*> roots;
     int qbits;
+    int logicalQubits;
 };
