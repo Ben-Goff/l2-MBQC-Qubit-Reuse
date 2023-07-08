@@ -82,6 +82,10 @@ int measure(struct QState *q, long b, int sup);
 
 
 
+int measureDeterm(struct QState *q, long b, int sup);
+
+
+
 long gaussian(struct QState *q);
 
 

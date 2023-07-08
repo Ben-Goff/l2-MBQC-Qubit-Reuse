@@ -35,4 +35,9 @@ struct circuit_graph {
     static std::vector<std::vector<std::pair<int, int>>> ThreadedMinimizeClusterState(int qbits, int threads);
 
     static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::set<int>> circuit);
+
+    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::set<int>> circuit, bool** restrictions);
+
+    static bool** emptyRestrictions(int size);
+
 };

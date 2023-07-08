@@ -13,6 +13,8 @@ bool finishedDrawing(std::vector<std::optional<std::tuple<Gate*, bool>>> current
     return true;
 }
 
+//takes in a circuit and simulates it using Gotessman-Knill. The return value is a vector of integers
+//the vector represents measurements, with the ith entry being the ith measurement of 0, 1 (deterministic) or 2 (50/50 random)
 std::vector<int> chp_simulation::simulate(qcircuit c) {
     //set the number of qubits
     QState* q;
@@ -96,7 +98,7 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                     int qbit = *std::get<1>(e);
                     printf("measure gate on qbit %i\n", g->measureQbit.value());
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
-                    measurements[g->measureQbit.value()] = measure(q, qbit, 0);
+                    measurements[g->measureQbit.value()] = measureDeterm(q, qbit, 0);
                     break;
                 }
                 case HadamardGate:
@@ -144,6 +146,7 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
 
 
 void chp_simulation::cz(QState* q, int qbit1, int qbit2) {
+    //we represent a cz gate by its equivalent h-cnot-h gate combination
     hadamard(q, qbit2);
     cnot(q, qbit1, qbit2);
     hadamard(q, qbit2);
@@ -157,16 +160,8 @@ bool chp_simulation::equivalent(qcircuit c1, qcircuit c2) {
     std::vector<int> m1 = simulate(c1);
     std::vector<int> m2 = simulate(c2);
     for(int i = 0; i < m1.size(); i++) {
-        if((m1[i] < 2) && (m1[i] != m2[i])) {
-            printf("Circuit 1 (deterministically) measured logical qubit %i as %i, but circuit 2 (deterministically) measured it as %i\n", i, m1[i], m2[i]);
-            return false;
-        }
-        if((m1[i] >= 2) && (m2[i] < 2)) {
-            printf("Circuit 1 measured logical qubit %i randomly, but circuit 2 measured it deterministically\n", i);
-            return false;
-        }
-        if((m2[i] >= 2) && (m1[i] < 2)) {
-            printf("Circuit 2 measured logical qubit %i randomly, but circuit 1 measured it deterministically\n", i);
+        if(m1[i] != m2[i]) {
+            printf("Circuit 1 measured %i on qubit %i, while circuit 2 measured %i\n", m1[i], i, m2[i]);
             return false;
         }
     }

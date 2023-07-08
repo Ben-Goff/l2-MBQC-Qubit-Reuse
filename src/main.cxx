@@ -202,5 +202,103 @@ int main(int argc, char* argv[]) {
     bool equiv = chp_simulation::equivalent(clusty, simmy);
     printf("are they equiv: %s\n", equiv ? "true" : "false");
 
+    bool** seven = circuit_graph::emptyRestrictions(13);
+    seven[1][0] = false;
+    seven[3][0] = false;
+    seven[5][0] = false;
+    seven[1][2] = false;
+    seven[3][2] = false;
+    seven[5][2] = false;
+    seven[1][4] = false;
+    seven[3][4] = false;
+    seven[5][4] = false;
+
+    seven[6][0] = false;
+    seven[8][0] = false;
+    seven[10][0] = false;
+    seven[6][2] = false;
+    seven[8][2] = false;
+    seven[10][2] = false;
+    seven[6][4] = false;
+    seven[8][4] = false;
+    seven[10][4] = false;
+
+    seven[7][0] = false;
+    seven[9][0] = false;
+    seven[11][0] = false;
+    seven[7][2] = false;
+    seven[9][2] = false;
+    seven[11][2] = false;
+    seven[7][4] = false;
+    seven[9][4] = false;
+    seven[11][4] = false;
+
+    seven[6][1] = false;
+    seven[8][1] = false;
+    seven[10][1] = false;
+    seven[6][3] = false;
+    seven[8][3] = false;
+    seven[10][3] = false;
+    seven[6][5] = false;
+    seven[8][5] = false;
+    seven[10][5] = false;
+
+
+    seven[7][1] = false;
+    seven[9][1] = false;
+    seven[11][1] = false;
+    seven[7][3] = false;
+    seven[9][3] = false;
+    seven[11][3] = false;
+    seven[7][5] = false;
+    seven[9][5] = false;
+    seven[11][5] = false;
+
+    seven[7][6] = false;
+    seven[9][6] = false;
+    seven[11][6] = false;
+    seven[7][8] = false;
+    seven[9][8] = false;
+    seven[11][8] = false;
+    seven[7][10] = false;
+    seven[9][10] = false;
+    seven[11][10] = false;
+
+    seven[12][0] = false;
+    seven[12][1] = false;
+    seven[12][2] = false;
+    seven[12][3] = false;
+    seven[12][4] = false;
+    seven[12][5] = false;
+    seven[12][6] = false;
+    seven[12][7] = false;
+    seven[12][8] = false;
+    seven[12][9] = false;
+    seven[12][10] = false;
+    seven[12][11] = false;
+
+
+    qcircuit cccc = qcircuit::hadamardClusterState(13);
+    std::vector<std::set<int>> circcc = cccc.CircuitCausalCone();
+    std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, seven);
+    for(std::vector<std::pair<int, int>> v : minim) {
+      for(std::pair<int, int> p : v) {
+        printf("%i %i ", p.first, p.second);
+      }
+      printf("\n");
+    }
+    printf("size is aaaaa %lu\n", minim.size());
+
+    cccc.Reuse(5, 8);
+    cccc.Reuse(4, 9);
+    cccc.Reuse(7, 9);
+    cccc.Reuse(8, 9);
+    cccc.Reuse(2, 8);
+    cccc.Reuse(1, 6);
+    cccc.Reuse(0, 3);
+
+    circuit_graph::OutputCircuit(cccc, "god");
+
+
     return 0;
 }

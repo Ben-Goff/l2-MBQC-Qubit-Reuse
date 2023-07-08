@@ -6,3 +6,5 @@ Thus, there can't be an optimal heuristic based only on causal cone size. This i
 decross paper only ckecks how much cc of j adds to i. that is not the biggest effect, much bigger is adding cc of i to everything that depends on j
 
 how does circuit reduction change with graph degree. randomly generate these
+
+gottesman-knill questions: what makes chp special? seems to have nice property such that measurements reset simulated state to 0 even is measurement is 1. see h then m on qubit 1 of 2 qubit tableau. what is a generator of a group?

@@ -372,10 +372,11 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::ThreadedMinimizeClu
     return bestReductions;
 }
 
-std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>> CausalConeHeuristicReductionHelper(std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>> input) {
-    printf("heuristic helper called. %lu\n", input.first.size());
-    std::vector<std::vector<std::pair<int, int>>> reductions = input.first;
-    std::vector<std::vector<std::set<int>>> circuits = input.second;
+std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>, std::vector<bool**>> input) {
+    printf("heuristic helper called. %lu\n", std::get<0>(input).size());
+    std::vector<std::vector<std::pair<int, int>>> reductions = std::get<0>(input);
+    std::vector<std::vector<std::set<int>>> circuits = std::get<1>(input);
+    std::vector<bool**> restrictionsVec = std::get<2>(input);
     //slack controls how much "worse" we let each individual step be. At upper limit, this becomes a brute force search
     //but low slack number (like 0) may still become brute force later on in the search. this is because low slack places a bottleneck in the first few reduction steps, so at later steps, essentially every reduction will have the same CC
     //lower number also has less optimal reductions. For example, size 30 reduces to 12 with slack 0, but 10 with slack 4
@@ -398,13 +399,14 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
     std::set<int> difference;
     for(int k = 0; k < reductions.size(); k++) {
         std::vector<std::set<int>> circuit = circuits[k];
+        bool** restrictions = restrictionsVec[k];
         circuitConeSize = 0;
         for(std::set<int> s : circuit) {
             circuitConeSize+=s.size();
         }
         for(int i = 0; i < qbits; i++) {
             for(int j = 0; j < qbits; j++) {
-                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0) {
+                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && restrictions[i][j]) {
                     //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE. TO REVERT, MAKE IT EQUAL TO ZERO
                     conesIncrease = circuitConeSize;
 
@@ -458,6 +460,7 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
 
     std::vector<std::vector<std::pair<int, int>>> newReductions;
     std::vector<std::vector<std::set<int>>> reducedCircuits;
+    std::vector<bool**> newRestrictions;
     for(std::vector<std::pair<int, std::pair<int, int>>> vec : nextReductionStep) {
         for(std::pair<int, std::pair<int, int>> r : vec) {
             //add the reduction steps to the list
@@ -505,17 +508,82 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector
 
             //and add it to list of circuits
             reducedCircuits.push_back(reducedCircuit);
+
+
+            bool** rest = new bool*[qbits - 1];
+            for(int p = 0; p < qbits - 1; p++) {
+                rest[p] = new bool[qbits - 1];
+            }
+
+            //top left quadrant
+            for(int m = 0; m < r.second.second; m++) {
+                for(int n = 0; n < r.second.second; n++) {
+                    rest[m][n] = restrictionsVec[r.first][m][n];
+                }
+            }
+
+            //top right quadrant
+            for(int m = r.second.second; m < qbits - 1; m++) {
+                for(int n = 0; n < r.second.second; n++) {
+                    rest[m][n] = restrictionsVec[r.first][m + 1][n];
+                }
+            }
+
+            //bottom left quadrant
+            for(int m = r.second.second; m < qbits - 1; m++) {
+                for(int n = 0; n < r.second.second; n++) {
+                    rest[n][m] = restrictionsVec[r.first][n][m+1];
+                }
+            }
+
+            //bottom right quadrant
+            for(int m = r.second.second; m < qbits - 1; m++) {
+                for(int n = r.second.second; n < qbits - 1; n++) {
+                    rest[n][m] = restrictionsVec[r.first][n+1][m+1];
+                }
+            }
+
+            //new restrictions
+            for(int m = 0; m < qbits; m++) {
+                if(!restrictionsVec[r.first][r.second.second][m]) {
+                    printf("there are %i qubits. accessing [%i][%i]. m is %i\n", qbits, r.second.first, m - (m > r.second.second ? 1 : 0), m);
+                    rest[r.second.first - (r.second.first > r.second.second ? 1 : 0)][m - (m > r.second.second ? 1 : 0)] = false;
+                }
+            }
+
+            newRestrictions.push_back(rest);
         }
     }
 
+    //free old restrictions
+    for(bool** r : restrictionsVec) {
+        for(int i = 0; i < qbits; i++) {
+            free(r[i]);
+        }
+        free(r);
+    }
+
+
     if(newReductions.size() == 0) {
-        return input;
+        return reductions;
     } else {
-        return CausalConeHeuristicReductionHelper(std::make_pair(newReductions, reducedCircuits));
+        return CausalConeHeuristicReductionHelper(std::make_tuple(newReductions, reducedCircuits, newRestrictions));
     }
 }
 
 std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::set<int>> circuit) {
+    int circuit_size = circuit.size();
+    bool** rest = new bool*[circuit_size];
+    for(int i = 0; i < circuit_size; i++) {
+        rest[i] = new bool[circuit_size];
+        for(int j = 0; j < circuit_size; j++) {
+            rest[i][j] = true;
+        }
+    }
+    return CausalConeHeuristicReduction(circuit, rest);
+}
+
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::set<int>> circuit, bool** restrictions) {
     printf("heuristic called\n");
     //slack controls how much "worse" we let each individual step be. At upper limit, this becomes a brute force search
     //for some reason the actual slack seems to be one less than this variable.
@@ -530,7 +598,7 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     for(int i = 0; i < qbits; i++) {
         for(int j = 0; j < qbits; j++) {
-            if(i != j && circuit[i].count(j) == 0 && circuit[j].count(i) == 0) {
+            if(i != j && circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && restrictions[i][j]) {
                 conesIncrease = 0;
 
                 //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE
@@ -577,26 +645,13 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
         }
     }
 
-    // TO DEBUG: will print out size of calculates and actual causal cones to see if there is a difference
-    //     for(std::pair<int, std::pair<int, int>> pp : nextReductionStep) {
-    //     qcircuit eleven = qcircuit::clusterState(11);
-    //     eleven.Reuse(pp.second.first, pp.second.second);
-    //     int actualCC = 0;
-    //     for(std::set<int> s : eleven.CircuitCausalCone()) {
-    //         actualCC+=s.size();
-    //     }
-    //     int supposedCC = pp.first;
-    //     if(supposedCC != actualCC) {
-    //         printf("ERROR: %i, calculated as %i, but should be %i for reduction %i %i\n", supposedCC - actualCC, supposedCC, actualCC, pp.second.first, pp.second.second);
-    //     }
-    // }
-
     std::vector<std::pair<int, int>> optimalReductionStep;
     std::transform(nextReductionStep.begin(), nextReductionStep.end(), std::inserter(optimalReductionStep, optimalReductionStep.begin()), [](std::pair<int, std::pair<int, int>> el){return el.second;});
 
     std::vector<std::vector<std::pair<int, int>>> reductions(optimalReductionStep.size());
     std::vector<std::vector<std::set<int>>> reducedCircuits(optimalReductionStep.size());
-    std::pair<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>> reduced = std::make_pair(reductions, reducedCircuits);
+    std::vector<bool**> restrictionsVec(optimalReductionStep.size());
+    std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>, std::vector<bool**>> reduced = std::make_tuple(reductions, reducedCircuits, restrictionsVec);
     
     for(int i = 0; i < optimalReductionStep.size(); i++) {
         std::pair<int, int> r = optimalReductionStep[i];
@@ -635,9 +690,68 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
             }
             reducedCircuit[j] = new_s;
         }
-        reduced.first[i] = {r};
-        reduced.second[i] = reducedCircuit;
+
+        bool** rest = new bool*[qbits - 1];
+        for(int p = 0; p < qbits - 1; p++) {
+            rest[p] = new bool[qbits - 1];
+        }
+
+        //top left quadrant
+        for(int m = 0; m < r.second; m++) {
+            for(int n = 0; n < r.second; n++) {
+                rest[m][n] = restrictions[m][n];
+            }
+        }
+
+        //top right quadrant
+        for(int m = r.second; m < qbits - 1; m++) {
+            for(int n = 0; n < r.second; n++) {
+                rest[m][n] = restrictions[m + 1][n];
+            }
+        }
+
+        //bottom left quadrant
+        for(int m = r.second; m < qbits - 1; m++) {
+            for(int n = 0; n < r.second; n++) {
+                rest[n][m] = restrictions[n][m+1];
+            }
+        }
+
+        //bottom right quadrant
+        for(int m = r.second; m < qbits - 1; m++) {
+            for(int n = r.second; n < qbits - 1; n++) {
+                rest[n][m] = restrictions[n+1][m+1];
+            }
+        }
+
+        //new restrictions
+        for(int m = 0; m < qbits; m++) {
+            if(!restrictions[r.second][m]) {
+                rest[r.first][m - (m > r.second ? 1 : 0)] = false;
+            }
+        }
+
+        std::get<0>(reduced)[i] = {r};
+        std::get<1>(reduced)[i] = reducedCircuit;
+        std::get<2>(reduced)[i] = rest;
     }
+
+    //free old restrictions
+    for(int i = 0; i < qbits; i++) {
+        free(restrictions[i]);
+    }
+    free(restrictions);
     
-    return CausalConeHeuristicReductionHelper(reduced).first;
+    return CausalConeHeuristicReductionHelper(reduced);
+}
+
+bool** circuit_graph::emptyRestrictions(int size) {
+    bool** rest = new bool*[size];
+    for(int i = 0; i < size; i++) {
+        rest[i] = new bool[size];
+        for(int j = 0; j < size; j++) {
+            rest[i][j] = true;
+        }
+    }
+    return rest;
 }
