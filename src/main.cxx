@@ -284,19 +284,21 @@ int main(int argc, char* argv[]) {
     std::vector<std::set<int>> circcc = cccc.CircuitCausalCone();
     std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, seven);
     for(std::vector<std::pair<int, int>> v : minim) {
+      cccc = qcircuit::labeledClusterState(13);
       for(std::pair<int, int> p : v) {
         printf("%i %i ", p.first, p.second);
+        cccc.Reuse(p.first, p.second);
       }
-      printf("\n");
+      printf("depth: %i\n", cccc.CircuitDepth());
     }
     printf("size is aaaaa %lu\n", minim.size());
 
-    cccc.Reuse(5, 8);
-    cccc.Reuse(4, 9);
-    cccc.Reuse(7, 9);
-    cccc.Reuse(8, 9);
+    cccc = qcircuit::labeledClusterState(13);
+    cccc.Reuse(8, 12);
+    cccc.Reuse(6, 11);
+    cccc.Reuse(5, 9);
+    cccc.Reuse(4, 7);
     cccc.Reuse(2, 8);
-    cccc.Reuse(1, 6);
     cccc.Reuse(0, 3);
 
     circuit_graph::OutputCircuit(cccc, "god");

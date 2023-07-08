@@ -460,9 +460,18 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
         for(std::set<int> s : circuit) {
             circuitConeSize+=s.size();
         }
+        bool unrestricted;
         for(int i = 0; i < qbits; i++) {
             for(int j = 0; j < qbits; j++) {
-                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && restrictions[i][j]) {
+                //if reuse i to j, must make sure that for any element c that has j in its causal cone, that restrictions[i][c]
+                //and also make sure that resrictions[i][j]
+                unrestricted = restrictions[i][j];
+                for(int q = 0; q < qbits; q++) {
+                    if(circuit[q].count(j) == 1) {
+                        unrestricted = unrestricted && restrictions[i][q];
+                    }
+                }
+                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && unrestricted) {
                     //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE. TO REVERT, MAKE IT EQUAL TO ZERO
                     conesIncrease = circuitConeSize;
 
