@@ -11,7 +11,7 @@ class qcircuit {
 public:
     qcircuit(int rootnum);
     static qcircuit clusterState(int qbits);
-    static qcircuit hadamardClusterState(int n);
+    static qcircuit labeledClusterState(int n);
     bool Reuse(int from, int to);
     void SafeReuse(int from, int to);
     void Spacer(int qbit, int count);
@@ -19,10 +19,12 @@ public:
     void CNOT(int qbit1, int qbit2);
     void CZ(int qbit1, int bqit2);
     void Reset(int qbit);
+    void LabeledMeasure(int qbit);
     void Measure(int qbit);
     bool hasCycle();
     Gate* EndOfExecution(int qbit);
     void OneQubitGate(int qbit, GateType type);
+    void CustomLabelOneQubitGate(int qbit, GateType type, std::string label);
     void TwoQubitGate(int qbit1, int qbit2, GateType type);
     int Qbits();
     int LogicalQbits();

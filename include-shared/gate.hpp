@@ -27,6 +27,7 @@ enum GateType {
 
 struct Gate {
   GateType type;
+  std::optional<std::string> customLabel = std::nullopt;
   //contains the logical qbit being measured if this is a measure gate
   std::optional<int> measureQbit;
   std::vector<std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>> edges;

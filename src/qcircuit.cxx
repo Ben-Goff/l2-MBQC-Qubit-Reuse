@@ -53,6 +53,10 @@ void qcircuit::Measure(int qbit) {
     OneQubitGate(qbit, MeasureGate);
 }
 
+void qcircuit::LabeledMeasure(int qbit) {
+    CustomLabelOneQubitGate(qbit, MeasureGate, "M" + std::to_string(qbit));
+}
+
 void qcircuit::CZ(int qbit1, int qbit2) {
     TwoQubitGate(qbit1, qbit2, CZGate);
 }
@@ -80,6 +84,29 @@ void qcircuit::OneQubitGate(int qbit, GateType type) {
     g->edges = {added};
     //make the new gate what the previously last gate now points to
     std::get<2>(*(end->findEdge(qbit))).emplace(g);
+}
+
+void qcircuit::CustomLabelOneQubitGate(int qbit, GateType type, std::string label) {
+
+    //find the last gate on qbit
+    Gate* end = this->EndOfExecution(qbit);
+    //create new gate
+    Gate* g = new Gate;
+    //set gate type
+    g->type = type;
+    //set the measure logical qbit if it is a measure gate
+    g->measureQbit = ((type == MeasureGate) ? (std::optional<int>{qbit}) : (std::nullopt));
+    //make pointer for qbit int
+    int* gate_int = new int;
+    *gate_int = qbit;
+    //make edge for gate
+    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> added = std::make_tuple(std::optional<Gate*>{end}, gate_int, std::nullopt);
+    //add edge to gate
+    g->edges = {added};
+    //make the new gate what the previously last gate now points to
+    std::get<2>(*(end->findEdge(qbit))).emplace(g);
+    //set the label
+    g->customLabel = std::optional<std::string>{label};
 }
 
 void qcircuit::TwoQubitGate(int qbit1, int qbit2, GateType type) {
@@ -212,22 +239,6 @@ std::set<int> qcircuit::CausalCone(int qbit) {
 
 qcircuit qcircuit::clusterState(int n) {
     qcircuit circuit(n);
-    for(int i = 1; i < n-1; i+=2) {
-        circuit.CZ(i, i+1);
-    }
-
-    for(int i = 0; i < n-1; i+=2) {
-        circuit.CZ(i, i+1);
-    }
-
-    for(int i = 0; i < n; i++) {
-        circuit.Measure(i);
-    }
-    return circuit;
-}
-
-qcircuit qcircuit::hadamardClusterState(int n) {
-    qcircuit circuit(n);
     for(int i = 0; i < n; i++) {
         circuit.H(i);
     }
@@ -242,6 +253,26 @@ qcircuit qcircuit::hadamardClusterState(int n) {
 
     for(int i = 0; i < n; i++) {
         circuit.Measure(i);
+    }
+    return circuit;
+}
+
+qcircuit qcircuit::labeledClusterState(int n) {
+    qcircuit circuit(n);
+    for(int i = 0; i < n; i++) {
+        circuit.H(i);
+    }
+
+    for(int i = 1; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n-1; i+=2) {
+        circuit.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < n; i++) {
+        circuit.LabeledMeasure(i);
     }
     return circuit;
 }

@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
     // }
     // printf("total reductions: %lu\n", minimizeHeuristic.size());
 
-    qcircuit clusty = qcircuit::hadamardClusterState(clusterstatesize);
+    qcircuit clusty = qcircuit::clusterState(clusterstatesize);
     clusty.Reuse(16, 19);
     clusty.Reuse(14, 18);
     clusty.Reuse(12, 17);
@@ -198,11 +198,13 @@ int main(int argc, char* argv[]) {
     clusty.Reuse(0, 8);
     circuit_graph::OutputCircuit(clusty, "output_circuit3");
 
-    qcircuit simmy = qcircuit::hadamardClusterState(clusterstatesize);
+    qcircuit simmy = qcircuit::clusterState(clusterstatesize);
     bool equiv = chp_simulation::equivalent(clusty, simmy);
     printf("are they equiv: %s\n", equiv ? "true" : "false");
 
     bool** seven = circuit_graph::emptyRestrictions(13);
+
+    //0 2 4 before 1 3 5 before 6 8 10 before 7 9 11
     seven[1][0] = false;
     seven[3][0] = false;
     seven[5][0] = false;
@@ -278,7 +280,7 @@ int main(int argc, char* argv[]) {
     seven[12][11] = false;
 
 
-    qcircuit cccc = qcircuit::hadamardClusterState(13);
+    qcircuit cccc = qcircuit::labeledClusterState(13);
     std::vector<std::set<int>> circcc = cccc.CircuitCausalCone();
     std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, seven);
     for(std::vector<std::pair<int, int>> v : minim) {
