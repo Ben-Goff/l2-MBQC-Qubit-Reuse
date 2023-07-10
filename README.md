@@ -8,3 +8,15 @@ decross paper only ckecks how much cc of j adds to i. that is not the biggest ef
 how does circuit reduction change with graph degree. randomly generate these
 
 gottesman-knill questions: what makes chp special? seems to have nice property such that measurements reset simulated state to 0 even is measurement is 1. see h then m on qubit 1 of 2 qubit tableau. what is a generator of a group?
+
+met with alex last week to discuss stabilizer formalism
+used code for gottesman-knill stabilizer formalism published by gottesman/aarsonson in paper alex showed me to verify equivalence of reduced circuits !!!
+added support for arbitrary restrictions on qubit reuse
+applied the proper restrictions for the mod3 circuit
+
+can j depend on i??? check chp
+
+consider noise, waiting times, other practical metrics for optimizing circuit
+use CIRQ to make sure that reduced circuit is still mod 3
+extend to mod n
+do loose storyline writeup and THEN paper

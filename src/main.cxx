@@ -279,30 +279,46 @@ int main(int argc, char* argv[]) {
     seven[12][10] = false;
     seven[12][11] = false;
 
-
-    qcircuit cccc = qcircuit::labeledClusterState(13);
+    int nnn = 4;
+    qcircuit cccc = qcircuit::mod3n(nnn);
     std::vector<std::set<int>> circcc = cccc.CircuitCausalCone();
-    std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, seven);
+    std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, circuit_graph::mod3nRestrictions(nnn));
+    printf("mhmmm\n");
     for(std::vector<std::pair<int, int>> v : minim) {
-      cccc = qcircuit::labeledClusterState(13);
+      cccc = qcircuit::mod3n(nnn);
       for(std::pair<int, int> p : v) {
         printf("%i %i ", p.first, p.second);
         cccc.Reuse(p.first, p.second);
       }
       printf("depth: %i\n", cccc.CircuitDepth());
     }
-    printf("size is aaaaa %lu\n", minim.size());
+    printf("size is aaaaa %lu. reduced to %lu\n", minim.size(), 4*nnn+5 - minim[0].size());
 
-    cccc = qcircuit::labeledClusterState(13);
-    cccc.Reuse(8, 12);
-    cccc.Reuse(6, 11);
-    cccc.Reuse(5, 9);
-    cccc.Reuse(4, 7);
-    cccc.Reuse(2, 8);
-    cccc.Reuse(0, 3);
 
-    circuit_graph::OutputCircuit(cccc, "god");
+//13 19 14 17 16 18 12 15 10 16 9 12 6 12 8 5 4 11 2 10 0 6
+    qcircuit mod35 = qcircuit::mod3n(4);
+    circuit_graph::OutputCircuit(mod35, "mod34");
+    mod35.Reuse(13, 19);
+    mod35.Reuse(14, 17);
+    mod35.Reuse(16, 18);
+    mod35.Reuse(12, 15);
+    mod35.Reuse(10, 16);
+    mod35.Reuse(9, 12);
+    mod35.Reuse(6, 12);
+    mod35.Reuse(8, 5);
+    mod35.Reuse(4, 11);
+    mod35.Reuse(2, 10);
+    mod35.Reuse(0, 6);
+    // mod35.Reuse(1, 13);
+    // mod35.Reuse(3, 12);
+    // mod35.Reuse(5, 11);
+    // mod35.Reuse(4, 7);
 
+    circuit_graph::OutputCircuit(mod35, "mod34-minim");
+
+
+    //qcircuit mod32 = qcircuit::mod3n(5);
+    //circuit_graph::OutputCircuit(mod32, "god");
 
     return 0;
 }

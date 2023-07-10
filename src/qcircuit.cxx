@@ -57,6 +57,10 @@ void qcircuit::LabeledMeasure(int qbit) {
     CustomLabelOneQubitGate(qbit, MeasureGate, "M" + std::to_string(qbit));
 }
 
+void qcircuit::LabeledGate(int qbit, std::string label) {
+    CustomLabelOneQubitGate(qbit, LabelGate, label);
+}
+
 void qcircuit::CZ(int qbit1, int qbit2) {
     TwoQubitGate(qbit1, qbit2, CZGate);
 }
@@ -234,6 +238,61 @@ void qcircuit::ReIndexQubit(int original) {
 std::set<int> qcircuit::CausalCone(int qbit) {
     std::set<int> ret = EndOfExecution(qbit)->UpstreamQbits();
     ret.insert(qbit);
+    return ret;
+}
+
+qcircuit qcircuit::mod3n(int n) {
+    qcircuit ret(4*n+5);
+    for(int i = 0; i < 4*n+5; i++) {
+        ret.H(i);
+    }
+
+    for(int i = 1; i < 4*n+5-1; i+=2) {
+        ret.CZ(i, i+1);
+    }
+
+    for(int i = 0; i < 4*n+5-1; i+=2) {
+        ret.CZ(i, i+1);
+    }
+
+    ret.LabeledGate(0, "α");
+
+    for(int i = 1; i <= 2*n+1; i+=2) {
+        ret.H(i - 1);
+        ret.Measure(i - 1);
+    }
+
+    for(int i = 2; i <= 2*n; i+=2) {
+        ret.LabeledGate(i - 1, "π");
+        ret.H(i - 1);
+        ret.Measure(i - 1);
+    }
+
+    ret.LabeledGate(2*n+2 - 1, "π");
+    ret.H(2*n+2 - 1);
+    ret.Measure(2*n+2 - 1);
+
+    ret.LabeledGate(2*n+3 - 1, "2α");
+
+    for(int i = 2*n+3; i <= 4*n + 3; i+=2) {
+        ret.H(i - 1);
+        ret.Measure(i - 1);
+    }
+
+    for(int i = 2*n+4; i <= 4*n + 2; i+=2) {
+        ret.LabeledGate(i - 1, "π");
+        ret.H(i - 1);
+        ret.Measure(i - 1);
+    }
+
+    ret.LabeledGate(4*n+4 - 1, "π");
+    ret.H(4*n+4 - 1);
+    ret.Measure(4*n+4 - 1);
+
+    ret.LabeledGate(4*n+5 -1 , "α");
+    ret.H(4*n+5 - 1);
+    ret.Measure(4*n+5 - 1);
+
     return ret;
 }
 

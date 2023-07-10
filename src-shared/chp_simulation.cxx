@@ -80,7 +80,6 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                 {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
                     int qbit = *std::get<1>(e);
-                    printf("blank gate on qbit %i\n", qbit);
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
                     break;
                 }
@@ -88,7 +87,6 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                 {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
                     int qbit = *std::get<1>(e);
-                    printf("reset gate on qbit %i\n", qbit);
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
                     break;
                 }
@@ -96,16 +94,21 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                 {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
                     int qbit = *std::get<1>(e);
-                    printf("measure gate on qbit %i\n", g->measureQbit.value());
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
                     measurements[g->measureQbit.value()] = measureDeterm(q, qbit, 0);
+                    break;
+                }
+                case LabelGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
                     break;
                 }
                 case HadamardGate:
                 {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
                     int qbit = *std::get<1>(e);
-                    printf("h gate on qbit %i\n", qbit);
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
                     hadamard(q, qbit);
                     break;
@@ -116,7 +119,6 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
                     int qbit1 = *std::get<1>(e1);
                     int qbit2 = *std::get<1>(e2);
-                    printf("cnot gate on qbits %i and %i\n", qbit1, qbit2);
                     currentLayer[qbit1] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit1].value()), true)};
                     currentLayer[qbit2] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit2].value()), true)};
                     cnot(q, qbit1, qbit2);
@@ -128,7 +130,6 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
                     int qbit1 = *std::get<1>(e1);
                     int qbit2 = *std::get<1>(e2);
-                    printf("cz gate on qbits %i and %i\n", qbit1, qbit2);
                     currentLayer[qbit1] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit1].value()), true)};
                     currentLayer[qbit2] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit2].value()), true)};
                     cz(q, qbit1, qbit2);

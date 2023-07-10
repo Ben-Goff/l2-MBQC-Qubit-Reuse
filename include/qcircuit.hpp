@@ -10,6 +10,7 @@
 class qcircuit {
 public:
     qcircuit(int rootnum);
+    static qcircuit mod3n(int n);
     static qcircuit clusterState(int qbits);
     static qcircuit labeledClusterState(int n);
     bool Reuse(int from, int to);
@@ -20,6 +21,7 @@ public:
     void CZ(int qbit1, int bqit2);
     void Reset(int qbit);
     void LabeledMeasure(int qbit);
+    void LabeledGate(int qbit, std::string label);
     void Measure(int qbit);
     bool hasCycle();
     Gate* EndOfExecution(int qbit);

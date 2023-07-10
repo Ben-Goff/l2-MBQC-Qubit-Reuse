@@ -40,4 +40,6 @@ struct circuit_graph {
 
     static bool** emptyRestrictions(int size);
 
+    static bool** mod3nRestrictions(int n);
+
 };

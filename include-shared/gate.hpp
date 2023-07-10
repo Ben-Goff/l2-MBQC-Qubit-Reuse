@@ -18,6 +18,7 @@ enum GateType {
   HadamardGate = 3,
   CNOTGate = 4,
   CZGate = 5,
+  LabelGate = 6,
 };
 
 // ================================================

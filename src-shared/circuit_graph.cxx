@@ -139,6 +139,26 @@ void circuit_graph::OutputCircuit(qcircuit circuit, std::string file) {
                     currentLayer[qbit] = std::optional<std::tuple<ogdf::node, Gate*, bool>>{std::make_tuple(n, std::get<1>(currentLayer[qbit].value()), true)};
                     break;
                 }
+                case LabelGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    if(std::find(cantPrint.begin(), cantPrint.end(), qbit) != cantPrint.end()) {
+                        break;
+                    }
+                    cantPrint.push_back(qbit);
+                    ogdf::node n = G.newNode();
+                    GA.x(n) = layer*NODE_HORZ_SEP;
+                    GA.y(n) = qbit*NODE_VERT_SEP;
+                    GA.width(n) = NODE_WIDTH;
+                    GA.height(n) = NODE_HEIGHT;
+                    GA.label(n) = g->customLabel.value();
+                    GA.yLabel(n) = NODE_LABEL_Y;
+                    ogdf::edge ej = G.newEdge(std::get<0>(currentLayer[qbit].value()),n);
+                    GA.arrowType(ej) = ogdf::EdgeArrow::None;
+                    currentLayer[qbit] = std::optional<std::tuple<ogdf::node, Gate*, bool>>{std::make_tuple(n, std::get<1>(currentLayer[qbit].value()), true)};
+                    break;
+                }
                 case HadamardGate:
                 {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
@@ -429,6 +449,7 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::ThreadedMinimizeClu
 }
 
 std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>, std::vector<bool**>> input) {
+    int mallocfree = 0;
     printf("heuristic helper called. %lu\n", std::get<0>(input).size());
     std::vector<std::vector<std::pair<int, int>>> reductions = std::get<0>(input);
     std::vector<std::vector<std::set<int>>> circuits = std::get<1>(input);
@@ -611,7 +632,6 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
             //new restrictions
             for(int m = 0; m < qbits; m++) {
                 if(!restrictionsVec[r.first][r.second.second][m]) {
-                    printf("there are %i qubits. accessing [%i][%i]. m is %i\n", qbits, r.second.first, m - (m > r.second.second ? 1 : 0), m);
                     rest[r.second.first - (r.second.first > r.second.second ? 1 : 0)][m - (m > r.second.second ? 1 : 0)] = false;
                 }
             }
@@ -630,6 +650,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
 
 
     if(newReductions.size() == 0) {
+        printf("we are done!\n");
         return reductions;
     } else {
         return CausalConeHeuristicReductionHelper(std::make_tuple(newReductions, reducedCircuits, newRestrictions));
@@ -817,6 +838,41 @@ bool** circuit_graph::emptyRestrictions(int size) {
         for(int j = 0; j < size; j++) {
             rest[i][j] = true;
         }
+    }
+    return rest;
+}
+
+bool** circuit_graph::mod3nRestrictions(int n) {
+    bool** rest = new bool*[4*n+5];
+    for(int i = 0; i < 4*n+5; i++) {
+        rest[i] = new bool[4*n+5];
+        for(int j = 0; j < 4*n+5; j++) {
+            rest[i][j] = true;
+        }
+    }
+    for(int i = 0; i <= 2*n; i+=2) {
+        for(int j = 1; j <= 2*n+1; j+=2) {
+            rest[j][i] = false;
+        }
+        for(int j = 2*n+2; j < 4*n+5; j++) {
+            rest[j][i] = false;
+        }
+    }
+    for(int i = 1; i <= 2*n + 1; i+=2) {
+        for(int j = 2*n+2; j < 4*n+5; j++) {
+            rest[j][i] = false;
+        }
+    }
+
+    for(int i = 2*n+2; i <= 4*n+2; i+=2) {
+        for(int j = 2*n+3; j <= 4*n+3; j+=2) {
+            rest[j][i] = false;
+        }
+        rest[4*n+4][i] = false;
+    }
+
+    for(int i = 0; i < 4*n+4; i++) {
+        rest[4*n+4][i] = false;
     }
     return rest;
 }
