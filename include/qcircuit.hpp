@@ -34,7 +34,7 @@ public:
     void setroots(std::vector<Gate*>* r);
     std::set<int> CausalCone(int qbit);
     void ReIndexQubit(int original);
-    std::vector<std::set<int>> CircuitCausalCone();
+    std::vector<std::vector<bool>> CircuitCausalCone();
     int CircuitDepth();
 private:
     std::vector<Gate*> roots;

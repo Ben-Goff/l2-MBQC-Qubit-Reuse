@@ -279,42 +279,78 @@ int main(int argc, char* argv[]) {
     seven[12][10] = false;
     seven[12][11] = false;
 
-    int nnn = 4;
+    FILE * fileWriteout;
+    fileWriteout = fopen ("mod33.txt","w");
+    int nnn = 3;
     qcircuit cccc = qcircuit::mod3n(nnn);
-    std::vector<std::set<int>> circcc = cccc.CircuitCausalCone();
+    std::vector<std::vector<bool>> circcc = cccc.CircuitCausalCone();
+    for(int i = 0; i < circcc.size(); i++) {
+      for(int j = 0; j < circcc[i].size(); j++) {
+        printf("%i ", circcc[i][j] ? 1 : 0);
+      }
+      printf("\n");
+    }
     std::vector<std::vector<std::pair<int, int>>> minim = circuit_graph::CausalConeHeuristicReduction(circcc, circuit_graph::mod3nRestrictions(nnn));
     printf("mhmmm\n");
     for(std::vector<std::pair<int, int>> v : minim) {
       cccc = qcircuit::mod3n(nnn);
       for(std::pair<int, int> p : v) {
-        printf("%i %i ", p.first, p.second);
-        cccc.Reuse(p.first, p.second);
+        fprintf(fileWriteout, "(%i %i) ", p.first, p.second);
+        cccc.SafeReuse(p.first, p.second);
       }
-      printf("depth: %i\n", cccc.CircuitDepth());
+      fprintf(fileWriteout, "depth: %i\n", cccc.CircuitDepth());
     }
     printf("size is aaaaa %lu. reduced to %lu\n", minim.size(), 4*nnn+5 - minim[0].size());
+    fclose(fileWriteout);
 
 
-//13 19 14 17 16 18 12 15 10 16 9 12 6 12 8 5 4 11 2 10 0 6
-    qcircuit mod35 = qcircuit::mod3n(4);
-    circuit_graph::OutputCircuit(mod35, "mod34");
-    mod35.Reuse(13, 19);
-    mod35.Reuse(14, 17);
-    mod35.Reuse(16, 18);
-    mod35.Reuse(12, 15);
-    mod35.Reuse(10, 16);
+//9 12 ---8 11--- 6 10---- 5 8---- 4 7 ----1 7---- 2 6 --- 0 4 depth: 20
+    qcircuit mod35 = qcircuit::mod3n(2);
+    circuit_graph::OutputCircuit(mod35, "mod32");
+    printf("depth: %i\n", mod35.CircuitDepth());
     mod35.Reuse(9, 12);
-    mod35.Reuse(6, 12);
-    mod35.Reuse(8, 5);
-    mod35.Reuse(4, 11);
-    mod35.Reuse(2, 10);
-    mod35.Reuse(0, 6);
-    // mod35.Reuse(1, 13);
-    // mod35.Reuse(3, 12);
-    // mod35.Reuse(5, 11);
+    printf("depth: %i\n", mod35.CircuitDepth());
+    mod35.Reuse(8, 11);
+    printf("depth: %i\n", mod35.CircuitDepth());
+    mod35.Reuse(6, 10);
+    // printf("depth: %i\n", mod35.CircuitDepth());
+    // mod35.Reuse(5, 8);
+    // printf("depth: %i\n", mod35.CircuitDepth());
     // mod35.Reuse(4, 7);
+    // printf("depth: %i\n", mod35.CircuitDepth());
+    // mod35.Reuse(1, 7);
+    // printf("depth: %i\n", mod35.CircuitDepth());
+    // mod35.Reuse(2, 6);
+    // printf("depth: %i\n", mod35.CircuitDepth());
+    // mod35.Reuse(0, 4);
 
-    circuit_graph::OutputCircuit(mod35, "mod34-minim");
+    circuit_graph::OutputCircuit(mod35, "mod32-minim-hmmm");
+
+
+    printf("%s\n", chp_simulation::equivalent(mod35, qcircuit::mod3n(2)) ? "true" : "false");
+
+
+  // (6 10) (8 11) (3 10) (4 7) (1 8) (2 5) (0 4) depth: 17
+  // (1 9) (0 7) (7 10) (6 9) (3 8) (4 0) (1 4) depth: 17
+  qcircuit first = qcircuit::mod3n(2);
+  first.Reuse(6, 10);
+  first.Reuse(8, 11);
+  first.Reuse(3, 10);
+  first.Reuse(4, 7);
+  first.Reuse(1, 8);
+  first.Reuse(2, 5);
+  first.Reuse(0, 4);
+  circuit_graph::OutputCircuit(first, "first_choice");
+
+  qcircuit second = qcircuit::mod3n(2);
+  second.Reuse(1, 9);
+  second.Reuse(0, 7);
+  second.Reuse(7, 10);
+  second.Reuse(6, 9);
+  second.Reuse(3, 8);
+  second.Reuse(4, 0);
+  second.Reuse(1, 4);
+  circuit_graph::OutputCircuit(second, "second_choice");
 
 
     //qcircuit mod32 = qcircuit::mod3n(5);

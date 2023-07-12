@@ -193,12 +193,12 @@ bool qcircuit::Reuse(int from, int to) {
     if(dependencies.find(to) != dependencies.end()) {
         //printf("qbit %i is dependent on qbit %i, cannot reuse\n", from, to);
         return false;
-    } 
-    Gate* endTo = this->EndOfExecution(to);
-    std::set<int> dependenciesTo = endTo->UpstreamQbits();
-    if(dependenciesTo.find(from) != dependenciesTo.end()) {
-        //printf("qbit %i is dependent on qbit %i, cannot reuse\n", to, from);
-        return false;
+    // } 
+    // Gate* endTo = this->EndOfExecution(to);
+    // std::set<int> dependenciesTo = endTo->UpstreamQbits();
+    // if(dependenciesTo.find(from) != dependenciesTo.end()) {
+    //     //printf("qbit %i is dependent on qbit %i, cannot reuse\n", to, from);
+    //     return false;
     } else {
         //we have the last measure gate point to the new qbit
         std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
@@ -255,7 +255,7 @@ qcircuit qcircuit::mod3n(int n) {
         ret.CZ(i, i+1);
     }
 
-    ret.LabeledGate(0, "α");
+    ///////////////////////ret.LabeledGate(0, "α");
 
     for(int i = 1; i <= 2*n+1; i+=2) {
         ret.H(i - 1);
@@ -263,16 +263,16 @@ qcircuit qcircuit::mod3n(int n) {
     }
 
     for(int i = 2; i <= 2*n; i+=2) {
-        ret.LabeledGate(i - 1, "π");
+        //ret.LabeledGate(i - 1, "π");
         ret.H(i - 1);
         ret.Measure(i - 1);
     }
 
-    ret.LabeledGate(2*n+2 - 1, "π");
+    // ret.LabeledGate(2*n+2 - 1, "π");
     ret.H(2*n+2 - 1);
     ret.Measure(2*n+2 - 1);
 
-    ret.LabeledGate(2*n+3 - 1, "2α");
+    // ret.LabeledGate(2*n+3 - 1, "2α");
 
     for(int i = 2*n+3; i <= 4*n + 3; i+=2) {
         ret.H(i - 1);
@@ -280,16 +280,16 @@ qcircuit qcircuit::mod3n(int n) {
     }
 
     for(int i = 2*n+4; i <= 4*n + 2; i+=2) {
-        ret.LabeledGate(i - 1, "π");
+        // ret.LabeledGate(i - 1, "π");
         ret.H(i - 1);
         ret.Measure(i - 1);
     }
 
-    ret.LabeledGate(4*n+4 - 1, "π");
+    // ret.LabeledGate(4*n+4 - 1, "π");
     ret.H(4*n+4 - 1);
     ret.Measure(4*n+4 - 1);
 
-    ret.LabeledGate(4*n+5 -1 , "α");
+    //ret.LabeledGate(4*n+5 -1 , "α");
     ret.H(4*n+5 - 1);
     ret.Measure(4*n+5 - 1);
 
@@ -336,10 +336,14 @@ qcircuit qcircuit::labeledClusterState(int n) {
     return circuit;
 }
 
-std::vector<std::set<int>> qcircuit::CircuitCausalCone() {
-    std::vector<std::set<int>> ret(this->qbits);
+std::vector<std::vector<bool>> qcircuit::CircuitCausalCone() {
+    std::vector<std::vector<bool>> ret(this->qbits);
     for(int i = 0; i < this->qbits; i++) {
-        ret[i] = this->CausalCone(i);
+        ret[i].resize(this->qbits);
+        std::set<int> s = this->CausalCone(i);
+        for(int j = 0; j < this->qbits; j++) {
+            ret[i][j] = (s.count(j) == 1);
+        }
     }
     return ret;
 }

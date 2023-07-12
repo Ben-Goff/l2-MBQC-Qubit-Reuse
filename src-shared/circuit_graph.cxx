@@ -448,17 +448,17 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::ThreadedMinimizeClu
     return bestReductions;
 }
 
-std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>, std::vector<bool**>> input) {
+std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::vector<bool>>>, std::vector<bool**>> input) {
     int mallocfree = 0;
     printf("heuristic helper called. %lu\n", std::get<0>(input).size());
     std::vector<std::vector<std::pair<int, int>>> reductions = std::get<0>(input);
-    std::vector<std::vector<std::set<int>>> circuits = std::get<1>(input);
+    std::vector<std::vector<std::vector<bool>>> circuits = std::get<1>(input);
     std::vector<bool**> restrictionsVec = std::get<2>(input);
     //slack controls how much "worse" we let each individual step be. At upper limit, this becomes a brute force search
     //but low slack number (like 0) may still become brute force later on in the search. this is because low slack places a bottleneck in the first few reduction steps, so at later steps, essentially every reduction will have the same CC
     //lower number also has less optimal reductions. For example, size 30 reduces to 12 with slack 0, but 10 with slack 4
     //slack does seem to be more important at initial steps. The last 1/3 of steps seem to all have same CC size
-    int slack = 5;
+    int slack = 10;
     int qbits = circuits[0].size();
     //seting least additions to causal cones to max possible value (qbits^2 implies every qbit relies on ever other qbit)
     int leastAdditions = qbits*qbits;
@@ -475,11 +475,13 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     std::set<int> difference;
     for(int k = 0; k < reductions.size(); k++) {
-        std::vector<std::set<int>> circuit = circuits[k];
+        std::vector<std::vector<bool>> circuit = circuits[k];
         bool** restrictions = restrictionsVec[k];
         circuitConeSize = 0;
-        for(std::set<int> s : circuit) {
-            circuitConeSize+=s.size();
+        for(std::vector<bool> s : circuit) {
+            for(bool b : s) {
+                conesIncrease+=(int)b;
+            }
         }
         bool unrestricted;
         for(int i = 0; i < qbits; i++) {
@@ -488,37 +490,40 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
                 //and also make sure that resrictions[i][j]
                 unrestricted = restrictions[i][j];
                 for(int q = 0; q < qbits; q++) {
-                    if(circuit[q].count(j) == 1) {
+                    //printf("calling circuit[%i][%i]. circuit size:%lu, circuit[%i] size:%lu\n", q, j, circuit.size(), q, circuit[q].size());
+                    if(circuit[q][j]) {
                         unrestricted = unrestricted && restrictions[i][q];
                     }
                 }
-                if(circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && unrestricted) {
+                if(!circuit[i][j] && !circuit[j][i] && unrestricted) {
                     //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE. TO REVERT, MAKE IT EQUAL TO ZERO
                     conesIncrease = circuitConeSize;
 
                     //reusing from i to j means concatenating causal cone of i to causal cone of all qbits that have j in their causal cone
-                    std::set<int> cone;
-                    for(int k = 0; k < circuit.size(); k++) {
-                        if(k != j) {
-                            cone = circuit[k];
-                            if(cone.count(j) == 1) {
-                                difference = {};
-                                std::set_difference(circuit[i].begin(), circuit[i].end(), cone.begin(), cone.end(), std::inserter(difference, difference.begin()));
-                                conesIncrease+=(int)(difference.size());
+                    std::vector<bool> cone;
+                    for(int q = 0; q < qbits; q++) {
+                        if(q != j) {
+                            cone = circuit[q];
+                            if(cone[j]) {
+                                for(int l = 0; l < qbits; l++) {
+                                    conesIncrease+= (circuit[i][l] && !cone[l]);
+                                }
                                 //minus one because we remove j
                                 conesIncrease--;
                             }
                         }
                     }
                     //reusing from i to j also means concatenating causal cone of j to causal cone of i
-                    difference.clear();
-                    std::set_difference(circuit[j].begin(), circuit[j].end(), circuit[i].begin(), circuit[i].end(), std::inserter(difference, difference.begin()));
-                    conesIncrease+=(int)(difference.size());
+                    for(int l = 0; l < qbits; l++) {
+                        conesIncrease+= (circuit[j][l] && !circuit[i][l]);
+                    }
                     //minus 1 because we remove j
                     conesIncrease--;
 
                     //and then getting rid of cc of j
-                    conesIncrease-=circuit[j].size();
+                    for(int l = 0; l < qbits; l++) {
+                        conesIncrease-= circuit[j][l];
+                    }
 
                     //no copying, just maintain slack + 1 lists, one for each count of additions
                     if(conesIncrease <= leastAdditions + slack) {
@@ -545,7 +550,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
     }
 
     std::vector<std::vector<std::pair<int, int>>> newReductions;
-    std::vector<std::vector<std::set<int>>> reducedCircuits;
+    std::vector<std::vector<std::vector<bool>>> reducedCircuits;
     std::vector<bool**> newRestrictions;
     for(std::vector<std::pair<int, std::pair<int, int>>> vec : nextReductionStep) {
         for(std::pair<int, std::pair<int, int>> r : vec) {
@@ -555,41 +560,73 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
             newReductions.push_back(newReduction);
 
             //this is where we will store the new causal cones
-            std::vector<std::set<int>> reducedCircuit(qbits);
-            std::vector<std::set<int>> currOrigCircuit = circuits[r.first];
-            for(int k = 0; k < currOrigCircuit.size(); k++) {
-                if(k != r.second.first && k != r.second.second) {
-                    if(currOrigCircuit[k].count(r.second.second) == 1) {
-                        //if k depends on j, we concatenate the cc of i to it
-                        std::set_union(currOrigCircuit[k].begin(), currOrigCircuit[k].end(),
-                        currOrigCircuit[r.second.first].begin(), currOrigCircuit[r.second.first].end(),
-                        std::inserter(reducedCircuit[k], reducedCircuit[k].begin()));
-                    } else {
-                        //if it is not, we just copy
-                        reducedCircuit[k] = currOrigCircuit[k];
+            std::vector<std::vector<bool>> reducedCircuit(qbits - 1);
+            for(int p = 0; p < qbits - 1; p++) {
+                reducedCircuit[p].resize(qbits - 1);
+            }
+            std::vector<std::vector<bool>> currOrigCircuit = circuits[r.first];
+
+            //then we copy over the previous circuit with the jth row an column removed
+            for(int l = 0; l < r.second.second; l++) {
+                for(int m = 0; m < r.second.second; m++) {
+                    reducedCircuit[l][m] = currOrigCircuit[l][m];
+                }
+            }
+            for(int l = r.second.second + 1; l < qbits; l++) {
+                for(int m = 0; m < r.second.second; m++) {
+                    reducedCircuit[l - 1][m] = currOrigCircuit[l][m];
+                }
+            }
+            for(int l = 0; l < r.second.second; l++) {
+                for(int m = r.second.second + 1; m < qbits; m++) {
+                    reducedCircuit[l][m - 1] = currOrigCircuit[l][m];
+                }
+            }
+            for(int l = r.second.second + 1; l < qbits; l++) {
+                for(int m = r.second.second + 1; m < qbits; m++) {
+                    reducedCircuit[l - 1][m - 1] = currOrigCircuit[l][m];
+                }
+            }
+
+            //then for all p which depends on j, we concatenate the cc of i to cc of p
+            for(int p = 0; p < r.second.second; p++) {
+                if(currOrigCircuit[p][r.second.second]) {
+                    for(int q = 0; q < r.second.second; q++) {
+                        reducedCircuit[p][q] = currOrigCircuit[p][q] || currOrigCircuit[r.second.first][q];
+                    }
+                    for(int q = r.second.second + 1; q < qbits; q++) {
+                        reducedCircuit[p][q - 1] = currOrigCircuit[p][q] || currOrigCircuit[r.second.first][q];
+                    }
+                }
+            }
+            for(int p = r.second.second + 1; p < qbits; p++) {
+                if(currOrigCircuit[p][r.second.second]) {
+                    for(int q = 0; q < r.second.second; q++) {
+                        reducedCircuit[p - 1][q] = currOrigCircuit[p][q] || currOrigCircuit[r.second.first][q];
+                    }
+                    for(int q = r.second.second + 1; q < qbits; q++) {
+                        reducedCircuit[p - 1][q - 1] = currOrigCircuit[p][q] || currOrigCircuit[r.second.first][q];
                     }
                 }
             }
 
 
             //we concatente cc of j to cc of i
-            std::set_union(currOrigCircuit[r.second.first].begin(), currOrigCircuit[r.second.first].end(),
-            currOrigCircuit[r.second.second].begin(), currOrigCircuit[r.second.second].end(),
-            std::inserter(reducedCircuit[r.second.first], reducedCircuit[r.second.first].begin()));
-
-
-            //now remove j from reduced circuit, and reducedCircuit is complete
-            reducedCircuit.erase(reducedCircuit.begin() + r.second.second);
-
-            //and we shift each qbit above the deleted qbit down by one
-            for(int j = 0; j < reducedCircuit.size(); j++) {
-                std::set<int> new_s;
-                for(int k : reducedCircuit[j]) {
-                    if(k != r.second.second) {
-                        new_s.insert(k - (int)(k > r.second.second));
-                    }
+            if(r.second.second > r.second.first) {
+            for(int q = 0; q < r.second.second; q++) {
+            reducedCircuit[r.second.first][q] = currOrigCircuit[r.second.first][q] || currOrigCircuit[r.second.second][q];
+            }
+            for(int q = r.second.second + 1; q < qbits; q++) {
+                reducedCircuit[r.second.first][q - 1] = currOrigCircuit[r.second.first][q] || currOrigCircuit[r.second.second][q];
+            }
+            } else {
+                //minus one if r.first is larger than r.second because then r.first will be shifted down one
+                for(int q = 0; q < r.second.second; q++) {
+                reducedCircuit[r.second.first - 1][q] = currOrigCircuit[r.second.first][q] || currOrigCircuit[r.second.second][q];
                 }
-                reducedCircuit[j] = new_s;
+                for(int q = r.second.second + 1; q < qbits; q++) {
+                    reducedCircuit[r.second.first - 1][q - 1] = currOrigCircuit[r.second.first][q] || currOrigCircuit[r.second.second][q];
+                }
             }
 
             //and add it to list of circuits
@@ -657,7 +694,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
     }
 }
 
-std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::set<int>> circuit) {
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit) {
     int circuit_size = circuit.size();
     bool** rest = new bool*[circuit_size];
     for(int i = 0; i < circuit_size; i++) {
@@ -669,7 +706,7 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     return CausalConeHeuristicReduction(circuit, rest);
 }
 
-std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::set<int>> circuit, bool** restrictions) {
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, bool** restrictions) {
     printf("heuristic called\n");
     //slack controls how much "worse" we let each individual step be. At upper limit, this becomes a brute force search
     //for some reason the actual slack seems to be one less than this variable.
@@ -684,37 +721,42 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     for(int i = 0; i < qbits; i++) {
         for(int j = 0; j < qbits; j++) {
-            if(i != j && circuit[i].count(j) == 0 && circuit[j].count(i) == 0 && restrictions[i][j]) {
+            printf("circuit[%i][%i], %i %i\n", (int)circuit.size(), (int)circuit[0].size(), i, j);
+            if(i != j && !circuit[i][j] && !circuit[j][i] && restrictions[i][j]) {
                 conesIncrease = 0;
 
                 //THIS CHANGES THE CODE FROM CALCULATING BASED ON CONE DIFFERENCE TO TOTAL CONE SIZE
-                for(std::set<int> s : circuit) {
-                    conesIncrease+=s.size();
-                }
+                // for(std::vector<bool> s : circuit) {
+                //     for(bool b : s) {
+                //         conesIncrease+=(int)b;
+                //     }
+                // }
 
                 //reusing from i to j means concatenating causal cone of i to causal cone of all qbits that have j in their causal cone
-                std::set<int> cone;
-                for(int k = 0; k < circuit.size(); k++) {
+                std::vector<bool> cone;
+                for(int k = 0; k < qbits; k++) {
                     if(k != j) {
                         cone = circuit[k];
-                        if(cone.count(j) == 1) {
-                            difference = {};
-                            std::set_difference(circuit[i].begin(), circuit[i].end(), cone.begin(), cone.end(), std::inserter(difference, difference.begin()));
-                            conesIncrease+=(int)(difference.size());
+                        if(cone[j]) {
+                            for(int l = 0; l < qbits; l++) {
+                                conesIncrease+= (circuit[i][l] && !cone[l]);
+                            }
                             //minus one because we remove j
                             conesIncrease--;
                         }
                     }
                 }
                 //reusing from i to j also means concatenating causal cone of j to causal cone of i
-                difference.clear();
-                std::set_difference(circuit[j].begin(), circuit[j].end(), circuit[i].begin(), circuit[i].end(), std::inserter(difference, difference.begin()));
-                conesIncrease+=(int)(difference.size());
+                for(int l = 0; l < qbits; l++) {
+                    conesIncrease+= (circuit[j][l] && !circuit[i][l]);
+                }
                 //minus 1 because we remove j
                 conesIncrease--;
 
                 //and then getting rid of cc of j
-                conesIncrease-=circuit[j].size();
+                for(int l = 0; l < qbits; l++) {
+                    conesIncrease-= circuit[j][l];
+                }
 
                 if(conesIncrease <= leastAdditions + slack) {
                     if(conesIncrease < leastAdditions) {
@@ -735,46 +777,77 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     std::transform(nextReductionStep.begin(), nextReductionStep.end(), std::inserter(optimalReductionStep, optimalReductionStep.begin()), [](std::pair<int, std::pair<int, int>> el){return el.second;});
 
     std::vector<std::vector<std::pair<int, int>>> reductions(optimalReductionStep.size());
-    std::vector<std::vector<std::set<int>>> reducedCircuits(optimalReductionStep.size());
+    std::vector<std::vector<std::vector<bool>>> reducedCircuits(optimalReductionStep.size());
     std::vector<bool**> restrictionsVec(optimalReductionStep.size());
-    std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::set<int>>>, std::vector<bool**>> reduced = std::make_tuple(reductions, reducedCircuits, restrictionsVec);
+    std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::vector<bool>>>, std::vector<bool**>> reduced = std::make_tuple(reductions, reducedCircuits, restrictionsVec);
     
     for(int i = 0; i < optimalReductionStep.size(); i++) {
         std::pair<int, int> r = optimalReductionStep[i];
         //this is where we will store the new causal cones
-        std::vector<std::set<int>> reducedCircuit(qbits);
-        for(int k = 0; k < circuit.size(); k++) {
-            if(k != r.second && k != r.first) {
-                if(circuit[k].count(r.second) == 1) {
-                    //if k depends on j, we concatenate the cc of i to it
-                    std::set_union(circuit[k].begin(), circuit[k].end(),
-                    circuit[r.first].begin(), circuit[r.first].end(),
-                    std::inserter(reducedCircuit[k], reducedCircuit[k].begin()));
-                } else {
-                    //if it is not, we just copy
-                    std::set<int> original(circuit[k]);
-                    reducedCircuit[k] = original;
+        //first we allocate the correct size
+        std::vector<std::vector<bool>> reducedCircuit(qbits - 1);
+        for(int k = 0; k < qbits - 1; k++) {
+            reducedCircuit[k].resize(qbits - 1);
+        }
+        //then we copy over the previous circuit with the jth row an column removed
+        for(int l = 0; l < r.second; l++) {
+            for(int m = 0; m < r.second; m++) {
+                reducedCircuit[l][m] = circuit[l][m];
+            }
+        }
+        for(int l = r.second + 1; l < qbits; l++) {
+            for(int m = 0; m < r.second; m++) {
+                reducedCircuit[l - 1][m] = circuit[l][m];
+            }
+        }
+        for(int l = 0; l < r.second; l++) {
+            for(int m = r.second + 1; m < qbits; m++) {
+                reducedCircuit[l][m - 1] = circuit[l][m];
+            }
+        }
+        for(int l = r.second + 1; l < qbits; l++) {
+            for(int m = r.second + 1; m < qbits; m++) {
+                reducedCircuit[l - 1][m - 1] = circuit[l][m];
+            }
+        }
+        //then for all k which depends on j, we concatenate the cc of i to cc of k
+        for(int k = 0; k < r.second; k++) {
+            if(circuit[k][r.second]) {
+                for(int q = 0; q < r.second; q++) {
+                    reducedCircuit[k][q] = circuit[k][q] || circuit [r.first][q];
+                }
+                for(int q = r.second + 1; q < qbits; q++) {
+                    reducedCircuit[k][q - 1] = circuit[k][q] || circuit [r.first][q];
+                }
+            }
+        }
+        for(int k = r.second + 1; k < qbits; k++) {
+            if(circuit[k][r.second]) {
+                for(int q = 0; q < r.second; q++) {
+                    reducedCircuit[k - 1][q] = circuit[k][q] || circuit [r.first][q];
+                }
+                for(int q = r.second + 1; q < qbits; q++) {
+                    reducedCircuit[k - 1][q - 1] = circuit[k][q] || circuit [r.first][q];
                 }
             }
         }
 
         //we concatente cc of j to cc of i
-        std::set_union(circuit[r.first].begin(), circuit[r.first].end(),
-        circuit[r.second].begin(), circuit[r.second].end(),
-        std::inserter(reducedCircuit[r.first], reducedCircuit[r.first].begin()));
-
-        //now remove j from reduced circuit, and reducedCircuit is complete
-        reducedCircuit.erase(reducedCircuit.begin() + r.second);
-
-        //and we shift each qbit above the deleted qbit down by one
-        for(int j = 0; j < reducedCircuit.size(); j++) {
-            std::set<int> new_s;
-            for(int k : reducedCircuit[j]) {
-                if(k != r.second) {
-                    new_s.insert(k - (int)(k > r.second));
-                }
+        if(r.second > r.first) {
+            for(int q = 0; q < r.second; q++) {
+            reducedCircuit[r.first][q] = circuit[r.first][q] || circuit [r.second][q];
             }
-            reducedCircuit[j] = new_s;
+            for(int q = r.second + 1; q < qbits; q++) {
+                reducedCircuit[r.first][q - 1] = circuit[r.first][q] || circuit [r.second][q];
+            }
+        } else {
+            //minus one if r.first is larger than r.second because then r.first will be shifted down one
+            for(int q = 0; q < r.second; q++) {
+            reducedCircuit[r.first - 1][q] = circuit[r.first][q] || circuit [r.second][q];
+            }
+            for(int q = r.second + 1; q < qbits; q++) {
+                reducedCircuit[r.first - 1][q - 1] = circuit[r.first][q] || circuit [r.second][q];
+            }
         }
 
         bool** rest = new bool*[qbits - 1];

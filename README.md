@@ -17,6 +17,6 @@ applied the proper restrictions for the mod3 circuit
 can j depend on i??? check chp
 
 consider noise, waiting times, other practical metrics for optimizing circuit
-use CIRQ to make sure that reduced circuit is still mod 3
+use CIRQ (or ProjectQ) to make sure that reduced circuit is still mod 3
 extend to mod n
 do loose storyline writeup and THEN paper
