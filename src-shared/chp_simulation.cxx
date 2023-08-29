@@ -88,15 +88,17 @@ std::vector<int> chp_simulation::simulate(qcircuit c) {
                     std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
                     int qbit = *std::get<1>(e);
                     currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                    //reset(q, qbit);
                     break;
                 }
                 case MeasureGate:
                 {
-                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
-                    int qbit = *std::get<1>(e);
-                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
-                    measurements[g->measureQbit.value()] = measureDeterm(q, qbit, 0);
-                    break;
+                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                        int qbit = *std::get<1>(e);
+                        currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                        printf("printing %i\n", g->measureQbit.value());
+                        measurements[g->measureQbit.value()] = measure(q, qbit, 0);
+                        break;
                 }
                 case LabelGate:
                 {
@@ -158,10 +160,12 @@ bool chp_simulation::equivalent(qcircuit c1, qcircuit c2) {
         printf("The two circuits had different numbers of logical qubits\n");
         return false;
     }
+    srand(time(0));
     std::vector<int> m1 = simulate(c1);
+    srand(time(0));
     std::vector<int> m2 = simulate(c2);
     for(int i = 0; i < m1.size(); i++) {
-        if(m1[i] != m2[i]) {
+        if(m1[i] != m2[i] && (m1[i] < 2 || m2[i] < 2)) {
             printf("Circuit 1 measured %i on qubit %i, while circuit 2 measured %i\n", m1[i], i, m2[i]);
             return false;
         }

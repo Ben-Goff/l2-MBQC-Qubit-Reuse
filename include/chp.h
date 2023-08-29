@@ -78,6 +78,14 @@ void printstate(struct QState *q);
 
 
 
+void printtableu(struct QState *q);
+
+
+
+void reset(struct QState *q, long b);
+
+
+
 int measure(struct QState *q, long b, int sup);
 
 

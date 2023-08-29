@@ -34,6 +34,7 @@ struct Gate {
   std::vector<std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>> edges;
   std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* findEdge(int qbit);
   std::set<int> UpstreamQbits();
+  bool Dependency(int n);
   std::vector<int> Qbits();
   bool isEnd(int qbit);
 };

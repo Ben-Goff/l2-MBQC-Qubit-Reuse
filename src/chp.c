@@ -289,6 +289,49 @@ void printstate(struct QState *q)
 }
 
 
+//Written by Benjamin Goff
+void printtableu(struct QState *q)
+
+// Print the matrix representation of the destabilizer and stabilizer for state q
+
+{
+
+	long i;
+	long j;
+	long j5;
+	unsigned long pw;
+
+	for (i = 0; i < 2*q->n; i++)
+	{
+         if (i == q->n)
+         {
+                 printf("\n");
+                 for (j = 0; j < q->n+1; j++)
+                         printf("-");
+         }
+         if (q->r[i]==2) printf("\n-");
+         else printf("\n+");
+         for (j = 0; j < q->n; j++)
+         {
+                 j5 = j>>5;
+                 pw = q->pw[j&31];
+                 printf("%lu ", q->x[i][j5]&pw);
+         }
+         printf("| ");
+         for (j = 0; j < q->n; j++)
+         {
+                 j5 = j>>5;
+                 pw = q->pw[j&31];
+                 printf("%lu ", q->z[i][j5]&pw);
+         }
+	}
+	printf("\n");
+
+	return;
+
+}
+
+
 
 int measure(struct QState *q, long b, int sup)
 
@@ -764,6 +807,29 @@ void initstae_(struct QState *q, long n, char *s)
          q->r[i] = 0;
 	}
 	if (s) preparestate(q, s);
+
+	return;
+
+}
+
+void reset(struct QState *q, long b)
+
+// Initialize state q to have n qubits, and input specified by s
+
+{
+
+	long i = b;
+	long j;
+        for (j = 0; j < q->over32; j++)
+        {
+                q->x[i][j] = 0;
+                q->z[i][j] = 0;
+                q->x[i + q->n][j] = 0;
+                q->z[i + q->n][j] = 0;
+        }
+        q->x[i][i>>5] = q->pw[i&31];
+        q->z[i + q->n][i>>5] = q->pw[i&31];
+        q->r[i] = 0;
 
 	return;
 

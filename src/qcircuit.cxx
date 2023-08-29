@@ -54,7 +54,7 @@ void qcircuit::Measure(int qbit) {
 }
 
 void qcircuit::LabeledMeasure(int qbit) {
-    CustomLabelOneQubitGate(qbit, MeasureGate, "M" + std::to_string(qbit));
+    CustomLabelOneQubitGate(qbit, MeasureGate, "M" + std::to_string(qbit + 1));
 }
 
 void qcircuit::LabeledGate(int qbit, std::string label) {
@@ -193,6 +193,62 @@ bool qcircuit::Reuse(int from, int to) {
     if(dependencies.find(to) != dependencies.end()) {
         //printf("qbit %i is dependent on qbit %i, cannot reuse\n", from, to);
         return false;
+    } 
+    // Gate* endTo = this->EndOfExecution(to);
+    // std::set<int> dependenciesTo = endTo->UpstreamQbits();
+    // if(dependenciesTo.find(from) != dependenciesTo.end()) {
+    //     //printf("qbit %i is dependent on qbit %i, cannot reuse\n", to, from);
+    //     return false;
+    // } 
+    else {
+        //we have the last measure gate point to the new qbit
+        std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
+        //we have the first gate of the to qbit point from the from qbit
+        std::get<0>(*(this->roots[to]->findEdge(to))).emplace(end);
+        std::vector<Gate*>* curr = this->getroots();
+        //find the root edge of the to qbit
+        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>>* edgeToUpdate = (*this->getroots())[to]->findEdge(to);
+        //chame its qbit to the from qbit
+        *std::get<1>(*edgeToUpdate) = from;
+        while(std::get<2>(*edgeToUpdate).has_value()) {
+            edgeToUpdate = std::get<2>(*edgeToUpdate).value()->findEdge(to);
+            *std::get<1>(*edgeToUpdate) = from;
+        }
+        //and then we need to shift all higher number qbits down by one. the "to" index is now not used, so we start by filling in that gap and everything else goes down by one
+        for(int i = to + 1; i < this->qbits; i++) {
+            this->ReIndexQubit(i);
+        }
+        //the physical qbit that is now made available by reuse can be removed from the list of roots
+        curr->erase(curr->begin() + to);
+        this->setroots(curr);
+        //and the number of physical qubits goes down by one accordingly
+        this->qbits = this->qbits - 1;
+        return true;
+    }
+}
+
+bool qcircuit::ReuseAndAdd(int from, int to, int spacers) {
+    if(to == from) {
+        //printf("to and from are both %i\n", from);
+        return false;
+    }
+    if(from > (this->qbits - 1) || from < 0) {
+        //printf("qbit %i is outside the range of the circuit\n", from);
+        return false;
+    }
+    if(to > (this->qbits - 1) || to < 0) {
+        //printf("qbit %i is outside the range of the circuit\n", to);
+        return false;
+    }
+    Gate* end = this->EndOfExecution(from);
+    if(end->type != MeasureGate) {
+        //printf("qbit %i doesn't currently end execution with a measure gate. it ends with %i\n", from, end->type);
+        return false;
+    }
+    std::set<int> dependencies = end->UpstreamQbits();
+    if(dependencies.find(to) != dependencies.end()) {
+        //printf("qbit %i is dependent on qbit %i, cannot reuse\n", from, to);
+        return false;
     // } 
     // Gate* endTo = this->EndOfExecution(to);
     // std::set<int> dependenciesTo = endTo->UpstreamQbits();
@@ -200,6 +256,8 @@ bool qcircuit::Reuse(int from, int to) {
     //     //printf("qbit %i is dependent on qbit %i, cannot reuse\n", to, from);
     //     return false;
     } else {
+        this->Spacer(from, 10);
+        end = this->EndOfExecution(from);
         //we have the last measure gate point to the new qbit
         std::get<2>(*(end->findEdge(from))).emplace(this->roots[to]);
         //we have the first gate of the to qbit point from the from qbit
@@ -255,43 +313,56 @@ qcircuit qcircuit::mod3n(int n) {
         ret.CZ(i, i+1);
     }
 
-    ///////////////////////ret.LabeledGate(0, "α");
+    // ret.Spacer(1, 4);
+    // ret.Spacer(2, 1);
+    // ret.Spacer(3, 5);
+    // ret.Spacer(4, 1);
+    // ret.Spacer(5, 6);
+    // ret.Spacer(6, 10);
+    // ret.Spacer(7, 14);
+    // ret.Spacer(8, 11);
+    // ret.Spacer(9, 15);
+    // ret.Spacer(10, 11);
+    // ret.Spacer(11, 16);
+    // ret.Spacer(12, 20);
+
+    ret.LabeledGate(0, "α");
 
     for(int i = 1; i <= 2*n+1; i+=2) {
         ret.H(i - 1);
-        ret.Measure(i - 1);
+        ret.LabeledMeasure(i - 1);
     }
 
     for(int i = 2; i <= 2*n; i+=2) {
-        //ret.LabeledGate(i - 1, "π");
+        ret.LabeledGate(i - 1, "π");
         ret.H(i - 1);
-        ret.Measure(i - 1);
+        ret.LabeledMeasure(i - 1);
     }
 
-    // ret.LabeledGate(2*n+2 - 1, "π");
+    ret.LabeledGate(2*n+2 - 1, "π");
     ret.H(2*n+2 - 1);
-    ret.Measure(2*n+2 - 1);
+    ret.LabeledMeasure(2*n+2 - 1);
 
-    // ret.LabeledGate(2*n+3 - 1, "2α");
+    ret.LabeledGate(2*n+3 - 1, "2α");
 
     for(int i = 2*n+3; i <= 4*n + 3; i+=2) {
         ret.H(i - 1);
-        ret.Measure(i - 1);
+        ret.LabeledMeasure(i - 1);
     }
 
     for(int i = 2*n+4; i <= 4*n + 2; i+=2) {
-        // ret.LabeledGate(i - 1, "π");
+        ret.LabeledGate(i - 1, "π");
         ret.H(i - 1);
-        ret.Measure(i - 1);
+        ret.LabeledMeasure(i - 1);
     }
 
-    // ret.LabeledGate(4*n+4 - 1, "π");
+    ret.LabeledGate(4*n+4 - 1, "π");
     ret.H(4*n+4 - 1);
-    ret.Measure(4*n+4 - 1);
+    ret.LabeledMeasure(4*n+4 - 1);
 
-    //ret.LabeledGate(4*n+5 -1 , "α");
+    ret.LabeledGate(4*n+5 -1 , "α");
     ret.H(4*n+5 - 1);
-    ret.Measure(4*n+5 - 1);
+    ret.LabeledMeasure(4*n+5 - 1);
 
     return ret;
 }
@@ -348,22 +419,131 @@ std::vector<std::vector<bool>> qcircuit::CircuitCausalCone() {
     return ret;
 }
 
-
-//returns the depth of the circuit by finding which qbit has the most gates
+//returns the depth of the circuit
+//it does assume that two two-qubit gates acting on qubits 1 and 3, and 2 and 4, can be implemented simultaneously
 int qcircuit::CircuitDepth() {
-    Gate* curr;
-    int depth = 0;
-    int qbitDepth = 0;
-    for(int i = 0; i < qbits; i++) {
-        curr = this->roots[i];
-        int qbitDepth = 1;
-        while(std::get<2>(*(curr->findEdge(i))).has_value()) {
-            qbitDepth++;
-            curr = std::get<2>(*(curr->findEdge(i))).value();
-        }
-        depth = std::max(depth, qbitDepth);
+
+    std::vector<Gate*> roots = *(this->getroots());
+
+    //at an index i, currentLayer holds
+    //1) A pointer to the next Gate to be printed for qbit i
+    //2) A boolean stating if the Gate is ready to be updated. True means 1) is a printing of 2), false means 1) is a printing of a gate that points to 2)
+    int layer = 0;
+    std::vector<std::optional<std::tuple<Gate*, bool>>> currentLayer(this->getroots()->size());
+    for(int i = 0; i < currentLayer.size(); i++) {
+        currentLayer[i] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(roots[i], true)};
     }
-    return depth;
+    bool finished = true;
+    for(auto o : currentLayer) {
+        if(o.has_value()) {finished = false;}
+    }
+    while(!finished) {
+        //update level of gates to be drawn
+        for(int i = 0; i < currentLayer.size(); i++) {
+            //if the gate's node has been printed
+            if(currentLayer[i].has_value() && std::get<1>(currentLayer[i].value())) {
+                //if it was the last gate for this qubit, remove entry from currentLayer
+                if(std::get<0>(currentLayer[i].value())->isEnd(i)) {
+                    currentLayer[i] = std::nullopt;
+                //else update the gate by traversing the gate to the next gate for that qubit
+                } else {
+                Gate* newGate = std::get<2>(*std::get<0>(currentLayer[i].value())->findEdge(i)).value();
+                currentLayer[i] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(newGate, false)};
+                }
+            }
+        }
+        //draw gates that have every qubit ready to be printed
+        std::set<Gate*> currentGates;
+        for(auto i : currentLayer) {
+            if(i.has_value()) {
+                currentGates.insert(std::get<0>(i.value()));
+            }
+        }
+        std::set<Gate*> printableGates;
+        for(auto g : currentGates) {
+            bool printable = true;
+            //for each edge in every gate which can be printed....
+            for(std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e : g->edges) {
+                int* qbit = std::get<1>(e);
+                //....we check if the qbit at that edge has printed every gate up to this gate and is ready to print
+                if(std::get<1>(currentLayer[*qbit].value()) || std::get<0>(currentLayer[*qbit].value()) != g) {
+                    printable = false;
+                }
+            }
+            if(printable) {
+                printableGates.insert(g);
+            }
+        }
+        for(auto g : printableGates) {
+            switch(g->type) {
+                //first all of the one-qubit gates. This will prevent two-qubit gates from visually running over one-qubit gate
+                case Blank:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                    break;
+                }
+                case ResetGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                    //reset(q, qbit);
+                    break;
+                }
+                case MeasureGate:
+                {
+                        std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                        int qbit = *std::get<1>(e);
+                        currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                        break;
+                }
+                case LabelGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                    break;
+                }
+                case HadamardGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e = g->edges[0];
+                    int qbit = *std::get<1>(e);
+                    currentLayer[qbit] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit].value()), true)};
+                    break;
+                }
+                case CNOTGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e1 = g->edges[0];
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
+                    int qbit1 = *std::get<1>(e1);
+                    int qbit2 = *std::get<1>(e2);
+                    currentLayer[qbit1] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit1].value()), true)};
+                    currentLayer[qbit2] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit2].value()), true)};
+                    break;
+                }
+                case CZGate:
+                {
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e1 = g->edges[0];
+                    std::tuple<std::optional<Gate*>, int*, std::optional<Gate*>> e2 = g->edges[1];
+                    int qbit1 = *std::get<1>(e1);
+                    int qbit2 = *std::get<1>(e2);
+                    currentLayer[qbit1] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit1].value()), true)};
+                    currentLayer[qbit2] = std::optional<std::tuple<Gate*, bool>>{std::make_tuple(std::get<0>(currentLayer[qbit2].value()), true)};
+                    break;
+                }
+                default: printf("Unknown Gate Type\n");
+            }
+        }
+        //update how many layers have been printed so far
+        layer++;
+        finished = true;
+        for(auto o : currentLayer) {
+            if(o.has_value()) {finished = false;}
+        }
+    }
+    return layer;
 }
 
 

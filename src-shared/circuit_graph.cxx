@@ -38,7 +38,8 @@ void circuit_graph::OutputCircuit(qcircuit circuit, std::string file) {
         GA.width(r) = NODE_WIDTH + 3;
         GA.height(r) = NODE_HEIGHT;
         GA.strokeType(r) = ogdf::StrokeType::None;
-        GA.label(r) = "|0〉";
+        GA.fillColor(r) = ogdf::Color("#CDEAFA");
+        GA.label(r) = "|0〉";
         GA.xLabel(r) = layer*NODE_HORZ_SEP + 3;
         currentLayer[i] = std::optional<std::tuple<ogdf::node, Gate*, bool>>{std::make_tuple(r, roots[i], true)};
     }
@@ -130,7 +131,7 @@ void circuit_graph::OutputCircuit(qcircuit circuit, std::string file) {
                     ogdf::node n = G.newNode();
                     GA.x(n) = layer*NODE_HORZ_SEP;
                     GA.y(n) = qbit*NODE_VERT_SEP;
-                    GA.width(n) = NODE_WIDTH;
+                    GA.width(n) = NODE_WIDTH + 10;
                     GA.height(n) = NODE_HEIGHT;
                     GA.label(n) = g->customLabel.value_or("M");
                     GA.yLabel(n) = NODE_LABEL_Y;
@@ -150,7 +151,7 @@ void circuit_graph::OutputCircuit(qcircuit circuit, std::string file) {
                     ogdf::node n = G.newNode();
                     GA.x(n) = layer*NODE_HORZ_SEP;
                     GA.y(n) = qbit*NODE_VERT_SEP;
-                    GA.width(n) = NODE_WIDTH;
+                    GA.width(n) = NODE_WIDTH + 3*(int)(g->customLabel.value().length() - 2 + 2*std::count(g->customLabel.value().begin(), g->customLabel.value().end(), 'M'));
                     GA.height(n) = NODE_HEIGHT;
                     GA.label(n) = g->customLabel.value();
                     GA.yLabel(n) = NODE_LABEL_Y;
@@ -448,8 +449,7 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::ThreadedMinimizeClu
     return bestReductions;
 }
 
-std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::vector<bool>>>, std::vector<bool**>> input) {
-    int mallocfree = 0;
+std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper(std::tuple<std::vector<std::vector<std::pair<int, int>>>, std::vector<std::vector<std::vector<bool>>>, std::vector<bool**>> input, int s) {
     printf("heuristic helper called. %lu\n", std::get<0>(input).size());
     std::vector<std::vector<std::pair<int, int>>> reductions = std::get<0>(input);
     std::vector<std::vector<std::vector<bool>>> circuits = std::get<1>(input);
@@ -458,7 +458,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
     //but low slack number (like 0) may still become brute force later on in the search. this is because low slack places a bottleneck in the first few reduction steps, so at later steps, essentially every reduction will have the same CC
     //lower number also has less optimal reductions. For example, size 30 reduces to 12 with slack 0, but 10 with slack 4
     //slack does seem to be more important at initial steps. The last 1/3 of steps seem to all have same CC size
-    int slack = 10;
+    int slack = s;
     int qbits = circuits[0].size();
     //seting least additions to causal cones to max possible value (qbits^2 implies every qbit relies on ever other qbit)
     int leastAdditions = qbits*qbits;
@@ -475,6 +475,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     std::set<int> difference;
     for(int k = 0; k < reductions.size(); k++) {
+        printf("%lu\n", reductions.size() - k);
         std::vector<std::vector<bool>> circuit = circuits[k];
         bool** restrictions = restrictionsVec[k];
         circuitConeSize = 0;
@@ -490,7 +491,6 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
                 //and also make sure that resrictions[i][j]
                 unrestricted = restrictions[i][j];
                 for(int q = 0; q < qbits; q++) {
-                    //printf("calling circuit[%i][%i]. circuit size:%lu, circuit[%i] size:%lu\n", q, j, circuit.size(), q, circuit[q].size());
                     if(circuit[q][j]) {
                         unrestricted = unrestricted && restrictions[i][q];
                     }
@@ -549,6 +549,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
         }
     }
 
+
     std::vector<std::vector<std::pair<int, int>>> newReductions;
     std::vector<std::vector<std::vector<bool>>> reducedCircuits;
     std::vector<bool**> newRestrictions;
@@ -556,6 +557,7 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
         for(std::pair<int, std::pair<int, int>> r : vec) {
             //add the reduction steps to the list
             std::vector<std::pair<int, int>> newReduction = reductions[r.first];
+            //THIS COPYING TAKES A LOOOOOOONG TIME, NEED TO REMOVE
             newReduction.push_back(r.second);
             newReductions.push_back(newReduction);
 
@@ -690,11 +692,11 @@ std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReductionHelper
         printf("we are done!\n");
         return reductions;
     } else {
-        return CausalConeHeuristicReductionHelper(std::make_tuple(newReductions, reducedCircuits, newRestrictions));
+        return CausalConeHeuristicReductionHelper(std::make_tuple(newReductions, reducedCircuits, newRestrictions), s);
     }
 }
 
-std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit) {
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, int s1, int s2) {
     int circuit_size = circuit.size();
     bool** rest = new bool*[circuit_size];
     for(int i = 0; i < circuit_size; i++) {
@@ -703,14 +705,14 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
             rest[i][j] = true;
         }
     }
-    return CausalConeHeuristicReduction(circuit, rest);
+    return CausalConeHeuristicReduction(circuit, rest, s1, s2);
 }
 
-std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, bool** restrictions) {
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, bool** restrictions, int s1, int s2) {
     printf("heuristic called\n");
     //slack controls how much "worse" we let each individual step be. At upper limit, this becomes a brute force search
     //for some reason the actual slack seems to be one less than this variable.
-    int slack = 5;
+    int slack = s1;
     int qbits = circuit.size();
     //seting least additions to causal cones to max possible value (qbits^2 implies every qbit relies on ever other qbit)
     int leastAdditions = (int)pow(qbits, 2);
@@ -721,7 +723,6 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     //calculates the total size increase in circuit causal cones if we reuse(i, j)
     for(int i = 0; i < qbits; i++) {
         for(int j = 0; j < qbits; j++) {
-            printf("circuit[%i][%i], %i %i\n", (int)circuit.size(), (int)circuit[0].size(), i, j);
             if(i != j && !circuit[i][j] && !circuit[j][i] && restrictions[i][j]) {
                 conesIncrease = 0;
 
@@ -886,7 +887,8 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
         //new restrictions
         for(int m = 0; m < qbits; m++) {
             if(!restrictions[r.second][m]) {
-                rest[r.first][m - (m > r.second ? 1 : 0)] = false;
+                //printf("qubits: %i\nr.first: %i\nr.second: %i\n", qbits, r.first, r.second);
+                rest[r.first - (r.first > r.second ? 1 : 0)][m - (m > r.second ? 1 : 0)] = false;
             }
         }
 
@@ -901,7 +903,7 @@ std::vector<std::vector<std::pair<int, int>>> circuit_graph::CausalConeHeuristic
     }
     free(restrictions);
     
-    return CausalConeHeuristicReductionHelper(reduced);
+    return CausalConeHeuristicReductionHelper(reduced, s2);
 }
 
 bool** circuit_graph::emptyRestrictions(int size) {
@@ -923,29 +925,204 @@ bool** circuit_graph::mod3nRestrictions(int n) {
             rest[i][j] = true;
         }
     }
-    for(int i = 0; i <= 2*n; i+=2) {
-        for(int j = 1; j <= 2*n+1; j+=2) {
-            rest[j][i] = false;
-        }
-        for(int j = 2*n+2; j < 4*n+5; j++) {
-            rest[j][i] = false;
-        }
-    }
-    for(int i = 1; i <= 2*n + 1; i+=2) {
-        for(int j = 2*n+2; j < 4*n+5; j++) {
-            rest[j][i] = false;
+
+    // - 1 everywhere to make up for zero indexing (paper is 1 index)
+
+    //step 2
+    for(int j = 2; j <= 2*n+2; j+=2) {
+        for(int i = 1; i<j; i+=2) {
+            rest[j - 1][i - 1] = false;
         }
     }
 
-    for(int i = 2*n+2; i <= 4*n+2; i+=2) {
-        for(int j = 2*n+3; j <= 4*n+3; j+=2) {
-            rest[j][i] = false;
-        }
-        rest[4*n+4][i] = false;
+    //step 3
+    for(int j = 2; j <= 2*n+3; j+=2) {
+        rest[2*n+3 - 1][j - 1] = false;
     }
 
-    for(int i = 0; i < 4*n+4; i++) {
-        rest[4*n+4][i] = false;
+    //step 4
+    for(int j = 2*n+4; j <= 4*n+2; j+=2) {
+        for(int i = 1; i<j; i+=2) {
+            rest[j - 1][i - 1] = false;
+        }
+    }
+
+    //weird part of step 4 here!!!
+    for(int i = 1; i<4*n+4; i+=2) {
+        rest[4*n+4 - 1][i - 1] = false;
+    }
+
+    //step 5
+    for(int i = 2; i<4*n+5; i+=2) {
+        rest[4*n+5 - 1][i - 1] = false;
     }
     return rest;
+}
+
+//CONSIDER CHANGING DEPTH FUNCTION TO SHOW PRINTABLE DEPTH
+//takes in a list of circuit reductions and the n value (circuit has 4n+5 qubits), and returns the reduction(s) that has the smallest circuit depth
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::smallestDepthMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n) {
+    if(reductions.size() == 0) {
+        throw std::invalid_argument("received empty reductions vector");
+    }
+    std::vector<std::vector<std::pair<int, int>>> ret;
+    qcircuit mod3n = qcircuit::mod3n(n);
+    int smallest = -1;
+    int curr_depth;
+    for(int i = 0; i < reductions.size(); i++) {
+        mod3n = qcircuit::mod3n(n);
+        for(std::pair<int, int> p : reductions[i]) {
+            mod3n.SafeReuse(p.first, p.second);
+        }
+        curr_depth = mod3n.CircuitDepth();
+        if(curr_depth == smallest || smallest == -1) {
+            ret.push_back(reductions[i]);
+            smallest = curr_depth;
+        } else if(curr_depth < smallest) {
+            ret.clear();
+            ret.push_back(reductions[i]);
+            smallest = curr_depth;
+        }
+    }
+    return ret;
+}
+
+int circuit_graph::noiseStrength(std::vector<std::pair<int, int>> reduction, int n) {
+    std::vector<std::vector<std::pair<int, int>>> ret;
+    qcircuit mod3n = qcircuit::mod3n(n);
+    int curr_max;
+    int curr_qubit_max;
+    std::vector<Gate*> curr_roots;
+    Gate* curr_root_gate;
+    mod3n = qcircuit::mod3n(n);
+    for(std::pair<int, int> p : reduction) {
+        mod3n.SafeReuse(p.first, p.second);
+    }
+    curr_max = 0;
+    curr_roots = *mod3n.getroots();
+    for(int j = 0; j < mod3n.Qbits(); j++) {
+        curr_qubit_max = 0;
+        curr_root_gate = curr_roots[j];
+        while(std::get<2>(*(curr_root_gate->findEdge(j))).has_value()) {
+            curr_root_gate = std::get<2>(*(curr_root_gate->findEdge(j))).value();
+            if(curr_root_gate->edges.size() == 2) {
+                curr_qubit_max++;
+            }
+        }
+        curr_max = std::max(curr_max, curr_qubit_max);
+    }
+    return curr_max;
+}
+
+int circuit_graph::ReductionEveness(std::vector<std::pair<int, int>> reduction, int n) {
+    std::vector<std::vector<std::pair<int, int>>> ret;
+    qcircuit mod3n = qcircuit::mod3n(n);
+    int curr_max;
+    int curr_qubit_max;
+    std::vector<Gate*> curr_roots;
+    Gate* curr_root_gate;
+    mod3n = qcircuit::mod3n(n);
+    for(std::pair<int, int> p : reduction) {
+        mod3n.SafeReuse(p.first, p.second);
+    }
+    curr_max = 0;
+    curr_roots = *mod3n.getroots();
+    for(int j = 0; j < mod3n.Qbits(); j++) {
+        curr_qubit_max = 0;
+        curr_root_gate = curr_roots[j];
+        while(std::get<2>(*(curr_root_gate->findEdge(j))).has_value()) {
+            curr_root_gate = std::get<2>(*(curr_root_gate->findEdge(j))).value();
+            if(curr_root_gate->type == ResetGate) {
+                curr_qubit_max++;
+            }
+        }
+        curr_max = std::max(curr_max, curr_qubit_max);
+    }
+    return curr_max;
+}
+
+//takes in a list of circuit reductions and the n value (circuit has 4n+5 qubits), and returns the reduction(s) that has the highest noise strength (least number of 2 qubit gates on any given qubit \ minmax)
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::bestNoiseStrengthMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n) {
+    if(reductions.size() == 0) {
+        throw std::invalid_argument("received empty reductions vector");
+    }
+    std::vector<std::vector<std::pair<int, int>>> ret;
+    qcircuit mod3n = qcircuit::mod3n(n);
+    int smallest = -1;
+    int curr_max;
+    int curr_qubit_max;
+    std::vector<Gate*> curr_roots;
+    Gate* curr_root_gate;
+    for(int i = 0; i < reductions.size(); i++) {
+        mod3n = qcircuit::mod3n(n);
+        for(std::pair<int, int> p : reductions[i]) {
+            mod3n.SafeReuse(p.first, p.second);
+        }
+        curr_max = 0;
+        curr_roots = *mod3n.getroots();
+        for(int j = 0; j < mod3n.Qbits(); j++) {
+            curr_qubit_max = 0;
+            curr_root_gate = curr_roots[j];
+            while(std::get<2>(*(curr_root_gate->findEdge(j))).has_value()) {
+                curr_root_gate = std::get<2>(*(curr_root_gate->findEdge(j))).value();
+                if(curr_root_gate->edges.size() == 2) {
+                    curr_qubit_max++;
+                }
+            }
+            curr_max = std::max(curr_max, curr_qubit_max);
+        }
+        if(smallest == -1 || curr_max == smallest) {
+            smallest = curr_max;
+            ret.push_back(reductions[i]);
+        } else if(curr_max < smallest) {
+            smallest = curr_max;
+            ret.clear();
+            ret.push_back(reductions[i]);
+
+        }
+    }
+    return ret;
+}
+
+//takes in a list of circuit reductions and the n value (circuit has 4n+5 qubits), and returns the reduction(s) that has the least number of reset gates on the qubit with the most number of reset gates
+std::vector<std::vector<std::pair<int, int>>> circuit_graph::bestEvenReductionsMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n) {
+    if(reductions.size() == 0) {
+        throw std::invalid_argument("received empty reductions vector");
+    }
+    std::vector<std::vector<std::pair<int, int>>> ret;
+    qcircuit mod3n = qcircuit::mod3n(n);
+    int smallest = -1;
+    int curr_max;
+    int curr_qubit_max;
+    std::vector<Gate*> curr_roots;
+    Gate* curr_root_gate;
+    for(int i = 0; i < reductions.size(); i++) {
+        mod3n = qcircuit::mod3n(n);
+        for(std::pair<int, int> p : reductions[i]) {
+            mod3n.SafeReuse(p.first, p.second);
+        }
+        curr_max = 0;
+        curr_roots = *mod3n.getroots();
+        for(int j = 0; j < mod3n.Qbits(); j++) {
+            curr_qubit_max = 0;
+            curr_root_gate = curr_roots[j];
+            while(std::get<2>(*(curr_root_gate->findEdge(j))).has_value()) {
+                curr_root_gate = std::get<2>(*(curr_root_gate->findEdge(j))).value();
+                if(curr_root_gate->type == ResetGate) {
+                    curr_qubit_max++;
+                }
+            }
+            curr_max = std::max(curr_max, curr_qubit_max);
+        }
+        if(smallest == -1 || curr_max == smallest) {
+            smallest = curr_max;
+            ret.push_back(reductions[i]);
+        } else if(curr_max < smallest) {
+            smallest = curr_max;
+            ret.clear();
+            ret.push_back(reductions[i]);
+
+        }
+    }
+    return ret;
 }

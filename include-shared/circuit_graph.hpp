@@ -30,16 +30,28 @@ struct circuit_graph {
 
     static bool finishedDrawing(std::vector<std::optional<std::tuple<ogdf::node, Gate*, bool>>> currentLayer);
 
+    static int noiseStrength(std::vector<std::pair<int, int>> reduction, int n);
+
+    static int ReductionEveness(std::vector<std::pair<int, int>> reduction, int n);
+
+    static void mod30();
+
     static std::vector<std::vector<std::pair<int, int>>> MinimizeClusterState(int qbits);
 
     static std::vector<std::vector<std::pair<int, int>>> ThreadedMinimizeClusterState(int qbits, int threads);
 
-    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit);
+    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, int s1, int s2);
 
-    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, bool** restrictions);
+    static std::vector<std::vector<std::pair<int, int>>> CausalConeHeuristicReduction(std::vector<std::vector<bool>> circuit, bool** restrictions, int s1, int s2);
 
     static bool** emptyRestrictions(int size);
 
     static bool** mod3nRestrictions(int n);
+
+    static std::vector<std::vector<std::pair<int, int>>> bestEvenReductionsMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n);
+
+    static std::vector<std::vector<std::pair<int, int>>> bestNoiseStrengthMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n);
+
+    static std::vector<std::vector<std::pair<int, int>>> smallestDepthMod3nReduction(std::vector<std::vector<std::pair<int, int>>> reductions, int n);
 
 };

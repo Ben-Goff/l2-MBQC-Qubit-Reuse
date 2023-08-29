@@ -15,6 +15,7 @@ public:
     static qcircuit labeledClusterState(int n);
     bool Reuse(int from, int to);
     void SafeReuse(int from, int to);
+    bool ReuseAndAdd(int from, int to, int spacers);
     void Spacer(int qbit, int count);
     void H(int qbit);
     void CNOT(int qbit1, int qbit2);
